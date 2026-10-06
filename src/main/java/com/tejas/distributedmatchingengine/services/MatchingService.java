@@ -68,6 +68,7 @@ public class MatchingService {
                     newOrder.setStatus(Status.FILLED);
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
+                    orderQueue.poll();
                     return 1;
                 }
                 else if(qtyFulfilled > 0) {
@@ -75,6 +76,7 @@ public class MatchingService {
                     newOrder.setStatus(Status.PARTIALLY_FILLED);
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
+                    orderQueue.poll();
                 }
                 else {
                     newOrder.setRemainingQuantity(0);
