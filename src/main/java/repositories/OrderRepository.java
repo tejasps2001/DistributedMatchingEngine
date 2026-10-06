@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import models.Order;
 import models.Status;
+import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -11,6 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 //@Getter
 //@Setter
+@Repository
 public class OrderRepository {
     private final SortedMap<BigDecimal, Queue<Order>> bidsBook;
     private final SortedMap<BigDecimal, Queue<Order>> asksBook;
