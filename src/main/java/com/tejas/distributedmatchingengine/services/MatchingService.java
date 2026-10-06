@@ -1,9 +1,9 @@
-package services;
+package com.tejas.distributedmatchingengine.services;
 
-import models.Order;
-import models.Status;
+import com.tejas.distributedmatchingengine.models.Order;
+import com.tejas.distributedmatchingengine.models.Status;
 import org.springframework.stereotype.Service;
-import repositories.OrderRepository;
+import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 
 import java.math.BigDecimal;
 import java.util.Map;

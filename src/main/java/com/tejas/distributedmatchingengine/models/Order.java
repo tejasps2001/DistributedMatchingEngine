@@ -1,4 +1,4 @@
-package models;
+package com.tejas.distributedmatchingengine.models;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

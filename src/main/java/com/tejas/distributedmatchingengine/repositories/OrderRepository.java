@@ -1,9 +1,7 @@
-package repositories;
+package com.tejas.distributedmatchingengine.repositories;
 
-import lombok.Getter;
-import lombok.Setter;
-import models.Order;
-import models.Status;
+import com.tejas.distributedmatchingengine.models.Order;
+import com.tejas.distributedmatchingengine.models.Status;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
