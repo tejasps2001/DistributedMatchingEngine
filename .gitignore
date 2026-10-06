@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+/src/test/java/com/tejas/distributedmatchingengine/TestsToDo.txt
+/src/main/java/todo.txt
+/src/main/java/ThreadGuidelines.txt
