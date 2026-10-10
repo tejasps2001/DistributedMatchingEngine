@@ -36,7 +36,7 @@ public class Order {
         this.status = Status.NEW;
     }
 
-    public String tostring() {
+    public String toString() {
         return String.format("%s order %d placed by %s \n" +
                         "for %d shares @ ₹ %f. \n\n" +
 
