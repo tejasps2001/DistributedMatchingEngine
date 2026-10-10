@@ -26,6 +26,9 @@ public class Order {
                  Type type,
                  BigDecimal price,
                  int quantity) {
+        this.orderId = nextId;
+        nextId++;
+        this.userId = userId;
         this.type = type;
         this.price = price;
         this.quantity = this.remainingQuantity = quantity;
