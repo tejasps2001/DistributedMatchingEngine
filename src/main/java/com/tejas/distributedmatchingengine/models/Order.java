@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -19,7 +19,7 @@ public class Order {
     private BigDecimal price; // Single order so no mention of type. Price automatically means the per-share price
     private int quantity;
     private int remainingQuantity;
-    private LocalDateTime timestamp;
+    private Instant timestamp;
     private Status status;
 
     public Order(String userId,
@@ -32,16 +32,17 @@ public class Order {
         this.type = type;
         this.price = price;
         this.quantity = this.remainingQuantity = quantity;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = Instant.now();
         this.status = Status.NEW;
     }
 
     public String toString() {
-        return String.format("%s order %d placed by %s \n" +
-                        "for %d shares @ ₹ %f. \n\n" +
-
-                        "%d shares filled.\n" +
-                        "%d shares not filled.",
+        return String.format("""
+                        %s order %d placed by %s\s
+                        for %d shares @ ₹ %f.\s
+                        
+                        %d shares filled.
+                        %d shares not filled.""",
                 type, orderId, userId, quantity,
                 price, quantity, remainingQuantity);
     }
