@@ -35,8 +35,8 @@ public class MatchingService {
         matchStatus = matchOrders(newOrder, suitableOrdersMap);
 
         // Order is not filled, add to book as a resting order
-        if(newOrder.getStatus() == Status.PARTIALLY_FILLED ||
-        newOrder.getStatus() == Status.NEW) {
+        if (newOrder.getStatus() == Status.PARTIALLY_FILLED ||
+                newOrder.getStatus() == Status.NEW) {
             orderRepository.addBuyOrder(newOrder);
         }
         return matchStatus;
@@ -55,7 +55,7 @@ public class MatchingService {
         matchStatus = matchOrders(newOrder, suitableOrdersMap);
 
         // Order is not filled, add to book as a resting order
-        if(newOrder.getStatus() == Status.PARTIALLY_FILLED ||
+        if (newOrder.getStatus() == Status.PARTIALLY_FILLED ||
                 newOrder.getStatus() == Status.NEW) {
             orderRepository.addSellOrder(newOrder);
         }
@@ -65,7 +65,7 @@ public class MatchingService {
     public int matchOrders(Order newOrder,
                             SortedMap<BigDecimal,
                                     Queue<Order>> suitableOrdersMap) {
-        for(Map.Entry<BigDecimal, Queue<Order>> suitableOrders :
+        for (Map.Entry<BigDecimal, Queue<Order>> suitableOrders :
                 suitableOrdersMap.entrySet()) {
             var orderQueue = suitableOrders.getValue();
             for(Order order : orderQueue) {
@@ -81,19 +81,17 @@ public class MatchingService {
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
                     orderQueue.poll();
-                    return 1;
-                }
-                else if(qtyFulfilled > 0) {
-                    newOrder.setRemainingQuantity(qtyFulfilled);
+                    return;
+                } else if (qtyLeft > 0) {
+                    newOrder.setRemainingQuantity(qtyLeft);
                     newOrder.setStatus(Status.PARTIALLY_FILLED);
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
                     orderQueue.poll();
-                }
-                else {
+                } else {
                     newOrder.setRemainingQuantity(0);
                     newOrder.setStatus(Status.FILLED);
-                    order.setRemainingQuantity(-1 * qtyFulfilled);
+                    order.setRemainingQuantity(-1 * qtyLeft);
                     order.setStatus(Status.PARTIALLY_FILLED);
                     return 1;
                 }
