@@ -73,9 +73,9 @@ public class MatchingService {
                     orderQueue.poll();
                     continue;
                 }
-                var qtyFulfilled = newOrder.getRemainingQuantity() -
-                        order.getRemainingQuantity();
-                if(qtyFulfilled == 0) {
+                var qtyFulfilled = Math.min(newOrder.getRemainingQuantity(), order.getRemainingQuantity());
+                var qtyLeft = newOrder.getRemainingQuantity() - order.getRemainingQuantity();
+                if (qtyLeft == 0) {
                     newOrder.setRemainingQuantity(0);
                     newOrder.setStatus(Status.FILLED);
                     order.setRemainingQuantity(0);
