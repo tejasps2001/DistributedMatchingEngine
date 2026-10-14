@@ -37,9 +37,8 @@ public class MatchingService {
     // executed (both buy and sell) only by a single thread. (i.e., no
     // concurrent matching) because the shared order books are updated.
     // Therefore, not synchronizing.
-    public int matchBuy(Order newOrder) {
-        int matchStatus = 0;
-        var suitableOrdersMap = orderRepository.getBuyOrders(
+    public synchronized Status matchBuy(Order newOrder) {
+        var suitableOrdersMap = orderRepository.getSellOrders(
                 newOrder.getPrice());
         // No orders to match to; add to order book
         if (suitableOrdersMap == null) {
@@ -63,10 +62,7 @@ public class MatchingService {
         return newOrder.getStatus();
     }
 
-    // Return 1 for successful match, 0 for fail or addition to book
-    public int matchSell(Order newOrder) {
-        int matchStatus = 0;
-        var suitableOrdersMap = orderRepository.getSellOrders(
+    public synchronized Status matchSell(Order newOrder) {
         var suitableOrdersMap = orderRepository.getBuyOrders(
                 newOrder.getPrice());
         // No orders to match to; add to order book
