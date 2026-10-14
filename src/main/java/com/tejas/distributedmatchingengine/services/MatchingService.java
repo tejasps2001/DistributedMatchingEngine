@@ -21,11 +21,16 @@ import java.util.logging.Logger;
 public class MatchingService {
     private final OrderRepository orderRepository;
     private final TransactionRepository transactionRepository;
+    private final static Queue<Order> buyQueue;
+    private final static Queue<Order> sellQueue;
     private final static Logger logger =
             Logger.getLogger(MatchingService.class.getName());
     private static final Executor transactionRecorder = Executors.newFixedThreadPool(8);
 
-    public MatchingService(OrderRepository orderRepository) {
+    static {
+        buyQueue = new ConcurrentLinkedQueue<>();
+        sellQueue = new ConcurrentLinkedQueue<>();
+    }
 
     public MatchingService(OrderRepository orderRepository,
                            TransactionRepository transactionRepository) {
