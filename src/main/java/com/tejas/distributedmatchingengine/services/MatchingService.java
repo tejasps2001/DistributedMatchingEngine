@@ -33,7 +33,6 @@ public class MatchingService {
         this.transactionRepository = transactionRepository;
     }
 
-    // Return 1 for successful match, 0 for fail or addition to book
     // ONLY ONE THREAD EXECUTES THIS. The core matching logic should be
     // executed (both buy and sell) only by a single thread. (i.e., no
     // concurrent matching) because the shared order books are updated.
@@ -43,9 +42,10 @@ public class MatchingService {
         var suitableOrdersMap = orderRepository.getBuyOrders(
                 newOrder.getPrice());
         // No orders to match to; add to order book
-        if(suitableOrdersMap == null) {
-            orderRepository.addSellOrder(newOrder);
-            return matchStatus;
+        if (suitableOrdersMap == null) {
+            logger.info("No sell orders to match to!");
+            orderRepository.addBuyOrder(newOrder);
+            return newOrder.getStatus();
         }
 //        else {
 //            logger.info("Sell orders present because we have: ");
@@ -60,19 +60,20 @@ public class MatchingService {
                 newOrder.getStatus() == Status.NEW) {
             orderRepository.addBuyOrder(newOrder);
         }
-        return matchStatus;
+        return newOrder.getStatus();
     }
 
     // Return 1 for successful match, 0 for fail or addition to book
     public int matchSell(Order newOrder) {
         int matchStatus = 0;
         var suitableOrdersMap = orderRepository.getSellOrders(
+        var suitableOrdersMap = orderRepository.getBuyOrders(
                 newOrder.getPrice());
         // No orders to match to; add to order book
         if (suitableOrdersMap == null) {
             logger.info("No buy orders to match to!");
             orderRepository.addSellOrder(newOrder);
-            return matchStatus;
+            return newOrder.getStatus();
         }
 //        else {
 //            logger.info("Buy orders present because we have: ");
@@ -87,17 +88,21 @@ public class MatchingService {
                 newOrder.getStatus() == Status.NEW) {
             orderRepository.addSellOrder(newOrder);
         }
-        return matchStatus;
+        return newOrder.getStatus();
     }
 
-    public int matchOrders(Order newOrder,
+    public void matchOrders(Order newOrder,
                             SortedMap<BigDecimal,
                                     Queue<Order>> suitableOrdersMap) {
         for (Map.Entry<BigDecimal, Queue<Order>> suitableOrders :
                 suitableOrdersMap.entrySet()) {
             var orderQueue = suitableOrders.getValue();
-            for(Order order : orderQueue) {
-                if(order.getStatus() == Status.CANCELLED) {
+            // Return if orderQueue is empty
+            if(orderQueue.isEmpty()) {
+                logger.info(String.format("No %s to match to!",
+                        newOrder.getType() == Type.BUY ? Type.SELL : Type.BUY));
+                continue;
+            }
             for (Order order : orderQueue) {
                 logger.info(String.format("""
                             \n%s is suitable for the incoming %s.
@@ -143,6 +148,5 @@ public class MatchingService {
                 }
             }
         }
-        return 0;
     }
 }
