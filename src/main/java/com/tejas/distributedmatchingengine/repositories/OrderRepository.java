@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 //@Getter
 //@Setter
@@ -14,6 +13,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class OrderRepository {
     private final SortedMap<BigDecimal, Queue<Order>> bidsBook;
     private final SortedMap<BigDecimal, Queue<Order>> asksBook;
+
     public OrderRepository() {
         // Bids book sorted in descending order & asks book sorted in ascending order
         bidsBook = new TreeMap<>(Comparator.reverseOrder());
@@ -69,15 +69,15 @@ public class OrderRepository {
         addOrder(newSellOrder, asksBook);
     }
 
-    public void addOrder(Order newSellOrder, SortedMap<BigDecimal, Queue<Order>> orderBook) {
-        if(orderBook.get(newSellOrder.getPrice()) != null) {
-            var orderList = asksBook.get(newSellOrder.getPrice());
-            orderList.add(newSellOrder);
+    public void addOrder(Order newOrder, SortedMap<BigDecimal, Queue<Order>> orderBook) {
+        if(orderBook.get(newOrder.getPrice()) != null) {
+            var orderList = orderBook.get(newOrder.getPrice());
+            orderList.add(newOrder);
             return;
         }
-        var newQueue = new ConcurrentLinkedQueue<Order>();
-        newQueue.add(newSellOrder);
-        orderBook.put(newSellOrder.getPrice(), newQueue);
+        var newQueue = new ArrayDeque<Order>();
+        newQueue.add(newOrder);
+        orderBook.put(newOrder.getPrice(), newQueue);
         // TODO: Don't add it if it isn't cancelled!
     }
 
@@ -97,7 +97,7 @@ public class OrderRepository {
             var orderQueue = orderBook.get(orderQueueToBeRemoved.getKey());
             // Don't remove orders from the order book that are only partially
             // filled.
-            // don't need to worry about orders in the book that are cancelled
+            // don't need to worry about orders in the book that are canceled
             // after matching because ordersToBeRemoved have the exact orders
             // that were matched
             var matchedQueue = orderQueueToBeRemoved.getValue();
