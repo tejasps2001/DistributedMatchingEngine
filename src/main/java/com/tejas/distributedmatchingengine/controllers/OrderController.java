@@ -3,12 +3,8 @@ package com.tejas.distributedmatchingengine.controllers;
 import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.services.MatchingService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 @RestController
@@ -52,6 +48,18 @@ public class OrderController {
                     newBuyOrder.getQuantity() - newBuyOrder.getRemainingQuantity());
             case Status.FILLED -> "Order executed.";
             default -> "No/Illegal Status provided.";
+        };
+    }
+
+    @DeleteMapping("/cancel")
+    public String modifyOrder(@RequestBody Order toCancelOrder) {
+        logger.info("Received request for cancellation.");
+        // If order already filled, then inform user with success code
+        int cancelStatus = toCancelOrder.cancel();
+        return switch (cancelStatus) {
+            case 1 -> "Order cancelled.";
+            case 0 -> "Couldn't cancel. Order already filled.";
+            default -> throw new IllegalStateException("Unexpected value for cancelStatus: " + cancelStatus);
         };
     }
 }
