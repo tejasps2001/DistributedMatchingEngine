@@ -39,12 +39,16 @@ public class Order {
     public String toString() {
         return String.format("""
                         %s order %d placed by %s\s
-                        for %d shares @ ₹ %f.\s
+                        for %d shares @ ₹ %s.\s
                         
-                        %d shares filled.
-                        %d shares not filled.""",
+                        %d filled.""",
                 type, orderId, userId, quantity,
-                price, quantity, remainingQuantity);
+                price.toPlainString(), quantity - remainingQuantity);
+    }
+
+    public String toCompactString() {
+        return String.format("%s order of %d @ ₹%s",
+                type, quantity, price.toPlainString());
     }
 
     public void cancel() {
