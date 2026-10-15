@@ -60,8 +60,9 @@ public class Order {
         // Have a redundant else if statement even for the below case because
         // modifying/cancelling partially filled orders will be implemented
         // in future milestones.
-        else if(status = Status.FILLED) {
+        else if(status == Status.FILLED) {
             return 0;
         }
+        return -1;
     }
 }
