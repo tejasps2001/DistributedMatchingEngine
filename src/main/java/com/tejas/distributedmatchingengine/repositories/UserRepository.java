@@ -1,6 +1,6 @@
 package com.tejas.distributedmatchingengine.repositories;
 
-import com.tejas.distributedmatchingengine.models.User;
+import com.tejas.distributedmatchingengine.models.UserWallet;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -9,20 +9,21 @@ import java.util.TreeMap;
 
 @Repository
 public class UserRepository {
-    private final SortedMap<String, User> users;
+    private final SortedMap<String, UserWallet> users;
 
-    // Hard-coded users for milestone 1
+    // Few hard-coded users for milestone 1 so that I don't need
+    // to create them while trialing
     public UserRepository() {
         users = new TreeMap<>();
-        User newUser1 = new User(BigDecimal.valueOf(1000.00));
-        users.put(newUser1.getUserID(), newUser1);
-        User newUser2 = new User(BigDecimal.valueOf(1000.00));
-        users.put(newUser2.getUserID(), newUser2);
+        UserWallet newUserWallet1 = new UserWallet(BigDecimal.valueOf(1000.00));
+        users.put(newUserWallet1.getUserID(), newUserWallet1);
+        UserWallet newUserWallet2 = new UserWallet(BigDecimal.valueOf(1000.00));
+        users.put(newUserWallet2.getUserID(), newUserWallet2);
     }
 
     public String addUser(BigDecimal balance) {
-        User newUser1 = new User(BigDecimal.valueOf(1000.00));
-        users.put(newUser1.getUserID(), newUser1);
-        return newUser1.getUserID();
+        UserWallet newUserWallet1 = new UserWallet(BigDecimal.valueOf(1000.00));
+        users.put(newUserWallet1.getUserID(), newUserWallet1);
+        return newUserWallet1.getUserID();
     }
 }
