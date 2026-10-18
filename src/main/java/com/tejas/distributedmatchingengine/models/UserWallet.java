@@ -60,7 +60,7 @@ public class UserWallet {
     // simultaneously leading to race conditions. Therefore, better to have
     // this synchronized.
     // Return true for success, false for negative balance
-    public synchronized boolean deductFromAvailableBalance(BigDecimal debit) {
+    public synchronized boolean tryDeductFromAvailableBalance(BigDecimal debit) {
         // Negative balance; Do not update balance
         if(availableBalance.compareTo(debit) < 0) {
             return false;
@@ -77,7 +77,7 @@ public class UserWallet {
     // simultaneously leading to race conditions. Therefore, better to have
     // this synchronized.
     // Return true for success, false for negative balance
-    public synchronized boolean deductFromTotalBalance(BigDecimal debit) {
+    public synchronized boolean tryDeductFromTotalBalance(BigDecimal debit) {
         // Negative balance; Do not update balance
         if(totalBalance.compareTo(debit) < 0) {
             return false;
@@ -112,7 +112,7 @@ public class UserWallet {
     // simultaneously leading to race conditions. Therefore, better to have
     // this synchronized.
     // Return true for success, false for negative balance
-    public synchronized boolean deductFromAvailableShares(int shares) {
+    public synchronized boolean tryDeductFromAvailableShares(int shares) {
         // Negative number of shares; Do not update
         if(availableShares < shares) {
             return false;
@@ -129,7 +129,7 @@ public class UserWallet {
     // simultaneously leading to race conditions. Therefore, better to have
     // this synchronized.
     // Return true for success, false for negative balance
-    public synchronized boolean deductFromTotalShares(int shares) {
+    public synchronized boolean tryDeductFromTotalShares(int shares) {
         // Negative number of shares; Do not update
         if(totalShares < shares) {
             return false;
