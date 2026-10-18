@@ -7,16 +7,20 @@ import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import com.tejas.distributedmatchingengine.services.MatchingService;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.logging.Logger;
 
 @RestController
 public class OrderController {
     private final MatchingService matchingService;
+    private final UserRepository userRepository;
 
     private final static Logger logger = Logger.getLogger(OrderController.class.getName());
 
-    public OrderController(MatchingService matchingService) {
+    public OrderController(MatchingService matchingService,
+                           UserRepository userRepository) {
         this.matchingService = matchingService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/sell")
@@ -68,10 +72,15 @@ public class OrderController {
                 case Status.NEW -> "Couldn't fill order. Added to order book.";
                 case Status.PARTIALLY_FILLED -> String.format("""
                     Filled %d shares.""",
-                    newBuyOrder.getQuantity() - newBuyOrder.getRemainingQuantity());
-            case Status.FILLED -> "Order executed.";
-            default -> "No/Illegal Status provided.";
-        };
+                        newBuyOrder.getQuantity() - newBuyOrder.getRemainingQuantity());
+                case Status.FILLED -> "Order executed.";
+                default -> "No/Illegal Status provided.";
+            };
+        }
+        else {
+            return "Insufficient funds!";
+        }
+
     }
 
     @DeleteMapping("/cancel")

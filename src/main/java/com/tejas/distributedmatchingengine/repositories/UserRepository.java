@@ -26,4 +26,17 @@ public class UserRepository {
         users.put(newUserWallet1.getUserID(), newUserWallet1);
         return newUserWallet1.getUserID();
     }
+
+    // Return null if no user with userID present
+    // Will be replaced by Spring Data's built-in methods later
+    // TODO: Ensure "It's also possible that the map
+    //  explicitly maps the key to null." doesn't happen or,
+    //  don't return null for no user.
+    //  NOTE: getOrDefault() method is used under the assumption that
+    //  once created, the userID doesn't change and is not deleted
+    //  since this method doesn't give synchronization guarantees.
+    //  Most probably not needed after milestone 1.
+    public UserWallet findUserByID(String userID) {
+        return users.getOrDefault(userID, null);
+    }
 }

@@ -5,6 +5,7 @@ import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Transaction;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
+import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 
@@ -21,6 +22,7 @@ import java.util.logging.Logger;
 public class MatchingService {
     private final OrderRepository orderRepository;
     private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
     private final static Queue<Order> buyQueue;
     private final static Queue<Order> sellQueue;
     private final static Logger logger =
@@ -33,7 +35,9 @@ public class MatchingService {
     }
 
     public MatchingService(OrderRepository orderRepository,
+                           UserRepository userRepository,
                            TransactionRepository transactionRepository) {
+        this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.transactionRepository = transactionRepository;
     }
@@ -109,6 +113,7 @@ public class MatchingService {
                             \n%s is suitable for the incoming %s.
                         """, order.toCompactString(), newOrder.toCompactString()));
                 if (order.getStatus() == Status.CANCELLED) {
+                    order.settle(userRepository, null);
                     orderQueue.poll();
                     continue;
                 }
@@ -117,8 +122,10 @@ public class MatchingService {
                 if (qtyLeft == 0) {
                     newOrder.setRemainingQuantity(0);
                     newOrder.setStatus(Status.FILLED);
+                    newOrder.settle(userRepository, order.getPrice());
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
+                    order.settle(userRepository, order.getPrice());
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
                                     new Transaction(order, newOrder, qtyFulfilled)
@@ -128,8 +135,10 @@ public class MatchingService {
                 } else if (qtyLeft > 0) {
                     newOrder.setRemainingQuantity(qtyLeft);
                     newOrder.setStatus(Status.PARTIALLY_FILLED);
+                    newOrder.settle(userRepository, order.getPrice());
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
+                    order.settle(userRepository, order.getPrice());
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
                                     new Transaction(order, newOrder, qtyFulfilled)
@@ -138,8 +147,10 @@ public class MatchingService {
                 } else {
                     newOrder.setRemainingQuantity(0);
                     newOrder.setStatus(Status.FILLED);
+                    newOrder.settle(userRepository, order.getPrice());
                     order.setRemainingQuantity(-1 * qtyLeft);
                     order.setStatus(Status.PARTIALLY_FILLED);
+                    order.settle(userRepository, order.getPrice());
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
                                     new Transaction(order, newOrder,
