@@ -22,7 +22,7 @@ public class UserRepository {
     }
 
     public String addUser(BigDecimal balance) {
-        UserWallet newUserWallet1 = new UserWallet(BigDecimal.valueOf(1000.00));
+        UserWallet newUserWallet1 = new UserWallet(balance);
         users.put(newUserWallet1.getUserID(), newUserWallet1);
         return newUserWallet1.getUserID();
     }

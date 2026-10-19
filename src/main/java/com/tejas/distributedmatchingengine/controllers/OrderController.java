@@ -100,4 +100,10 @@ public class OrderController {
         UserWallet wallet = userRepository.findUserByID(userID);
         return wallet.toString();
     }
+
+    @PostMapping
+    // Create a new user and return the userID of the created account
+    public String createNewUser(@RequestParam double balance) {
+        return userRepository.addUser(BigDecimal.valueOf(balance));
+    }
 }
