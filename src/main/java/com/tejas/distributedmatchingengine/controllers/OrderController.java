@@ -80,7 +80,6 @@ public class OrderController {
         else {
             return "Insufficient funds!";
         }
-
     }
 
     @DeleteMapping("/cancel")
@@ -93,5 +92,12 @@ public class OrderController {
             case 0 -> "Couldn't cancel. Order already filled.";
             default -> throw new IllegalStateException("Unexpected value for cancelStatus: " + cancelStatus);
         };
+    }
+
+    @GetMapping("/portfolio")
+    // Get the total and the available balance of the user
+    public String getPortfolio(@RequestParam String userID) {
+        UserWallet wallet = userRepository.findUserByID(userID);
+        return wallet.toString();
     }
 }

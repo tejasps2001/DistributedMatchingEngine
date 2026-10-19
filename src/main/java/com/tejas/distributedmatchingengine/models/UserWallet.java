@@ -65,10 +65,9 @@ public class UserWallet {
     // Return true for success, false for negative balance
     public synchronized boolean tryDeductFromAvailableBalance(BigDecimal debit) {
         // Negative balance; Do not update balance
-        if(availableBalance.compareTo(debit) < 0) {
+        if (availableBalance.compareTo(debit) < 0) {
             return false;
-        }
-        else {
+        } else {
             availableBalance = availableBalance.subtract(debit);
             return true;
         }
@@ -82,10 +81,9 @@ public class UserWallet {
     // Return true for success, false for negative balance
     public synchronized boolean tryDeductFromTotalBalance(BigDecimal debit) {
         // Negative balance; Do not update balance
-        if(totalBalance.compareTo(debit) < 0) {
+        if (totalBalance.compareTo(debit) < 0) {
             return false;
-        }
-        else {
+        } else {
             totalBalance = totalBalance.subtract(debit);
             return true;
         }
@@ -117,10 +115,9 @@ public class UserWallet {
     // Return true for success, false for negative balance
     public synchronized boolean tryDeductFromAvailableShares(int shares) {
         // Negative number of shares; Do not update
-        if(availableShares < shares) {
+        if (availableShares < shares) {
             return false;
-        }
-        else {
+        } else {
             availableShares -= shares;
             return true;
         }
@@ -134,12 +131,22 @@ public class UserWallet {
     // Return true for success, false for negative balance
     public synchronized boolean tryDeductFromTotalShares(int shares) {
         // Negative number of shares; Do not update
-        if(totalShares < shares) {
+        if (totalShares < shares) {
             return false;
-        }
-        else {
+        } else {
             totalShares -= shares;
             return true;
         }
+    }
+
+    public String toString() {
+        return String.format("""
+                        Total balance: %s
+                        Available balance: %s
+                        
+                        Total shares: %d
+                        Available shares: %d""",
+                totalBalance, availableBalance,
+                totalShares, availableShares);
     }
 }
