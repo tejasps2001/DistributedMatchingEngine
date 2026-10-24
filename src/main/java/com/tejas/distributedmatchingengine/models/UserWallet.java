@@ -19,7 +19,6 @@ import java.util.UUID;
 @ToString
 public class UserWallet {
 
-    @Setter(AccessLevel.PUBLIC)
     private String userID;
 
     // Balance available for new BUYs
