@@ -28,10 +28,11 @@ public class OrderController {
         logger.info("Received SELL order.");
         UserWallet wallet = userRepository.findUserByID(newSellOrder.getUserId());
         // Check if the user contains the required amount of shares
-        if(wallet.tryDeductFromAvailableShares(newSellOrder.getQuantity())) {
-            // The limit on the number of async tomcat threads will time out requests
-            // during high load. Need to add the requests' orders to a queue and
-            // release the thread. CompletableFuture is better than a synchronized?
+        if (wallet.tryDeductFromAvailableShares(newSellOrder.getQuantity())) {
+            // The limit on the number of async tomcat threads will time out
+            // requests during high load. Need to add the requests' orders to a
+            // queue and release the thread. CompletableFuture is better than a
+            // synchronized?
             Status matchStatus = matchingService.matchSell(newSellOrder);
             return switch (matchStatus) {
                 case Status.NEW -> "Couldn't fill order. Added to order book.";
@@ -61,12 +62,13 @@ public class OrderController {
         //  not much needs to be done other than calling them here.
         UserWallet wallet = userRepository.findUserByID(newBuyOrder.getUserId());
         // Check if the user has the money to buy
-        if(wallet.tryDeductFromAvailableBalance(newBuyOrder.getPrice().multiply(
+        if (wallet.tryDeductFromAvailableBalance(newBuyOrder.getPrice().multiply(
                 BigDecimal.valueOf(newBuyOrder.getQuantity())
         ))) {
-            // The limit on the number of async tomcat threads will time out requests
-            // during high load. Need to add the requests' orders to a queue and
-            // release the thread. CompletableFuture is better than a synchronized?
+            // The limit on the number of async tomcat threads will time out
+            // requests during high load. Need to add the requests' orders to a
+            // queue and release the thread. CompletableFuture is better than a
+            // synchronized?
             Status matchStatus = matchingService.matchBuy(newBuyOrder);
             return switch (matchStatus) {
                 case Status.NEW -> "Couldn't fill order. Added to order book.";
@@ -90,7 +92,8 @@ public class OrderController {
         return switch (cancelStatus) {
             case 1 -> "Order cancelled.";
             case 0 -> "Couldn't cancel. Order already filled.";
-            default -> throw new IllegalStateException("Unexpected value for cancelStatus: " + cancelStatus);
+            default -> throw new IllegalStateException("Unexpected value for" +
+                    " cancelStatus: " + cancelStatus);
         };
     }
 

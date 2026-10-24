@@ -75,8 +75,8 @@ public class Order {
     // TODO: Since settlement should be atomically done for both the BUY and SELL
     //          together, maybe must settle both the orders in one settle() call
     //          and wrap it with @Transactional (although settling both the orders
-    //          in one of the orders wouldn't be correct and hence the need for
-    //          SettlementService).
+    //          in one of the Order objects wouldn't be correct and hence the need
+    //          for SettlementService).
     public void settle(UserRepository userRepository,
                        BigDecimal restingOrderPrice) {
         // Start the settlement thread and immediately return to the matching
