@@ -58,18 +58,17 @@ public class Order {
     }
 
     // Return 1 on a successful cancellation; 0 when order is already filled
-    public int cancel() {
+    public Status cancel() {
         if (status == Status.NEW) {
             status = Status.CANCELLED;
-            return 1;
         }
         // Have a redundant else if statement even for the below case because
         // modifying/cancelling partially filled orders will be implemented
         // in future milestones.
         else if (status == Status.FILLED) {
-            return 0;
+            return status;
         }
-        return -1;
+        return status;
     }
 
     // TODO: Since settlement should be atomically done for both the BUY and SELL

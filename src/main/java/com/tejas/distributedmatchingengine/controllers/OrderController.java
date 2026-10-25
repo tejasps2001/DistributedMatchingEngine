@@ -15,7 +15,8 @@ public class OrderController {
     private final MatchingService matchingService;
     private final UserRepository userRepository;
 
-    private final static Logger logger = Logger.getLogger(OrderController.class.getName());
+    private final static Logger logger = Logger.getLogger(
+            OrderController.class.getName());
 
     public OrderController(MatchingService matchingService,
                            UserRepository userRepository) {
@@ -38,12 +39,12 @@ public class OrderController {
                 case Status.NEW -> "Couldn't fill order. Added to order book.";
                 case Status.PARTIALLY_FILLED -> String.format("""
                                 Filled %d shares.""",
-                        newSellOrder.getQuantity() - newSellOrder.getRemainingQuantity());
+                        newSellOrder.getQuantity() -
+                                newSellOrder.getRemainingQuantity());
                 case Status.FILLED -> "Order executed.";
                 default -> "No/Illegal Status provided.";
             };
-        }
-        else {
+        } else {
             return "Insufficient amount of shares!";
         }
     }
@@ -88,10 +89,10 @@ public class OrderController {
     public String modifyOrder(@RequestBody Order toCancelOrder) {
         logger.info("Received request for cancellation.");
         // If order already filled, then inform user with success code
-        int cancelStatus = toCancelOrder.cancel();
+        Status cancelStatus = toCancelOrder.cancel();
         return switch (cancelStatus) {
-            case 1 -> "Order cancelled.";
-            case 0 -> "Couldn't cancel. Order already filled.";
+            case Status.CANCELLED -> "Order cancelled.";
+            case Status.FILLED -> "Couldn't cancel. Order already filled.";
             default -> throw new IllegalStateException("Unexpected value for" +
                     " cancelStatus: " + cancelStatus);
         };
