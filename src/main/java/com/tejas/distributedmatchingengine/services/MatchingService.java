@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 public class MatchingService {
     private final OrderRepository orderRepository;
     private final TransactionRepository transactionRepository;
-    private final UserRepository userRepository;
     private final static Queue<Order> buyQueue;
     private final static Queue<Order> sellQueue;
     private final SettlementService settlementService;
@@ -39,7 +38,6 @@ public class MatchingService {
                            UserRepository userRepository,
                            SettlementService settlementService,
                            TransactionRepository transactionRepository) {
-        this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.settlementService = settlementService;
         this.transactionRepository = transactionRepository;
@@ -58,12 +56,6 @@ public class MatchingService {
             orderRepository.addBuyOrder(newOrder);
             return newOrder.getStatus();
         }
-//        else {
-//            logger.info("Sell orders present because we have: ");
-//            for(Map.Entry<BigDecimal, Queue<Order>> suitableOrders: suitableOrdersMap.entrySet()) {
-//                logger.info(suitableOrders.getValue().toString());
-//            }
-//        }
         matchOrders(newOrder, suitableOrdersMap);
 
         // Order is not filled, add to book as a resting order
