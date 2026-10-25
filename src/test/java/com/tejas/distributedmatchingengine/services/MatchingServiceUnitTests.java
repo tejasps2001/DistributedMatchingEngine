@@ -189,5 +189,161 @@ public class MatchingServiceUnitTests {
         verify(orderRepository).addBuyOrder(buyOrder);
     }
 
+    // Matching SELL order
+    @Test
+    @DisplayName("Test that a SELL order is successfully matched with a BUY" +
+            " order.")
+    public void matchSellHappyFlow() {
+        Order sellOrder = new Order("user123",
+                Type.SELL, BigDecimal.valueOf(12.00), 20);
+
+        Order buyOrder = new Order("user124",
+                Type.BUY, BigDecimal.valueOf(12.00), 20);
+
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        buyOrderQueue.add(buyOrder);
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.reverseOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
+                .willReturn(suitableOrdersMap);
+
+        Status orderStatus = matchingService.matchSell(sellOrder);
+
+        assertEquals(Status.FILLED, orderStatus);
+    }
+
+    @Test
+    @DisplayName("Test that a SELL order is successfully and fully filled by" +
+            " multiple BUY orders.")
+    public void matchSellMultipleBuyHappyFlow() {
+        Order sellOrder = new Order("user123",
+                Type.SELL, BigDecimal.valueOf(12.00), 20);
+
+        Order buyOrder1 = new Order("user124",
+                Type.BUY, BigDecimal.valueOf(12.00), 5);
+        Order buyOrder2 = new Order("user125",
+                Type.BUY, BigDecimal.valueOf(12.00), 5);
+        Order buyOrder3 = new Order("user126",
+                Type.BUY, BigDecimal.valueOf(12.00), 5);
+        Order buyOrder4 = new Order("user124",
+                Type.BUY, BigDecimal.valueOf(12.00), 5);
+
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>(List.of(buyOrder1,
+                buyOrder2, buyOrder3, buyOrder4));
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.reverseOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
+                .willReturn(suitableOrdersMap);
+
+        Status orderStatus = matchingService.matchSell(sellOrder);
+
+        assertEquals(Status.FILLED, orderStatus);
+    }
+
+    @Test
+    @DisplayName("Test that a SELL order is successfully matched and partially" +
+            " filled with a BUY order.")
+    public void matchSellPartialFillHappyFlow() {
+        Order sellOrder = new Order("user123",
+                Type.SELL, BigDecimal.valueOf(12.00), 20);
+
+        Order buyOrder = new Order("user124",
+                Type.BUY, BigDecimal.valueOf(12.00), 10);
+
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        buyOrderQueue.add(buyOrder);
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.reverseOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
+                .willReturn(suitableOrdersMap);
+
+        Status orderStatus = matchingService.matchSell(sellOrder);
+
+        assertEquals(Status.PARTIALLY_FILLED, orderStatus);
+    }
+
+    @Test
+    @DisplayName("Test that a SELL order is successfully and partially filled" +
+            " by multiple BUY orders.")
+    public void matchSellMultipleBuyPartialHappyFlow() {
+        Order sellOrder = new Order("user123",
+                Type.SELL, BigDecimal.valueOf(12.00), 20);
+
+        Order buyOrder1 = new Order("user124",
+                Type.BUY, BigDecimal.valueOf(12.00), 5);
+        Order buyOrder2 = new Order("user125",
+                Type.BUY, BigDecimal.valueOf(12.00), 5);
+        Order buyOrder3 = new Order("user126",
+                Type.BUY, BigDecimal.valueOf(12.00), 5);
+
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>(List.of(buyOrder1,
+                buyOrder2, buyOrder3));
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.reverseOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
+                .willReturn(suitableOrdersMap);
+
+        Status orderStatus = matchingService.matchSell(sellOrder);
+
+        assertEquals(Status.PARTIALLY_FILLED, orderStatus);
+    }
+
+    @Test
+    @DisplayName("Test that a SELL order is added to order book when the BUY" +
+            " order queue is empty.")
+    public void matchSellEmptyBuy() {
+        Order sellOrder = new Order("user123",
+                Type.SELL, BigDecimal.valueOf(12.00), 20);
+
+        // Empty SELL Queue
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.naturalOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
+                .willReturn(suitableOrdersMap);
+
+        Status orderStatus = matchingService.matchSell(sellOrder);
+
+        assertEquals(Status.NEW, orderStatus);
+
+        verify(orderRepository).addSellOrder(sellOrder);
+    }
+
+    @Test
+    @DisplayName("Test that a SELL order is added to order book when the BUY" +
+            " order queue is empty.")
+    public void matchSellNoBuy() {
+        Order sellOrder = new Order("user123",
+                Type.SELL, BigDecimal.valueOf(12.00), 20);
+
+        // Empty bids book
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.naturalOrder());
+
+        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
+                .willReturn(suitableOrdersMap);
+
+        Status orderStatus = matchingService.matchSell(sellOrder);
+
+        assertEquals(Status.NEW, orderStatus);
+
+        verify(orderRepository).addSellOrder(sellOrder);
+    }
+
 
 }
