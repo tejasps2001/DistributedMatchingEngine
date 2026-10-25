@@ -90,6 +90,8 @@ public class Order {
                 if (status == Status.PARTIALLY_FILLED || status == Status.FILLED) {
                     wallet.addToAvailableShares(qtyFilled);
                     wallet.addToTotalShares(qtyFilled);
+                    // Ignore the boolean return value since we know for sure that
+                    // the funds are present
                     wallet.tryDeductFromTotalBalance(restingOrderPrice.multiply(
                             BigDecimal.valueOf(qtyFilled)));
                 }
