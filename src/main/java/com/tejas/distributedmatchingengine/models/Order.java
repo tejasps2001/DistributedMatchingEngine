@@ -81,7 +81,10 @@ public class Order {
         // Start the settlement thread and immediately return to the matching
         // to speed up matching
         orderSettler.execute(() -> {
-            UserWallet wallet = userRepository.findUserByID(userId);
+            // No need to check for presence of non-null value before get()
+            // because the non-null check has already happened in the
+            // OrderController
+            UserWallet wallet = userRepository.findUserByID(userId).get();
             int qtyFilled = quantity - remainingQuantity;
             if (type == Type.BUY) {
                 if (status == Status.PARTIALLY_FILLED || status == Status.FILLED) {

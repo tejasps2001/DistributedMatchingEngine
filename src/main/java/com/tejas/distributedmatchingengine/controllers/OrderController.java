@@ -1,5 +1,6 @@
 package com.tejas.distributedmatchingengine.controllers;
 
+import com.tejas.distributedmatchingengine.exceptions.UserNotFoundException;
 import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.UserWallet;
@@ -27,7 +28,9 @@ public class OrderController {
     @PostMapping("/sell")
     public String placeSell(@RequestBody Order newSellOrder) {
         logger.info("Received SELL order.");
-        UserWallet wallet = userRepository.findUserByID(newSellOrder.getUserId());
+        UserWallet wallet = userRepository.findUserByID(newSellOrder.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("No user with" +
+                        " userID:" + newSellOrder.getUserId()));
         // Check if the user contains the required amount of shares
         if (wallet.tryDeductFromAvailableShares(newSellOrder.getQuantity())) {
             // The limit on the number of async tomcat threads will time out
@@ -61,7 +64,9 @@ public class OrderController {
         //  (maybe even for a different symbol even) can be sent from the same
         //  user. But then the crediting and debiting calls are synchronous so
         //  not much needs to be done other than calling them here.
-        UserWallet wallet = userRepository.findUserByID(newBuyOrder.getUserId());
+        UserWallet wallet = userRepository.findUserByID(newBuyOrder.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("No user with" +
+                        " userID:" + newBuyOrder.getUserId()));
         // Check if the user has the money to buy
         if (wallet.tryDeductFromAvailableBalance(newBuyOrder.getPrice().multiply(
                 BigDecimal.valueOf(newBuyOrder.getQuantity())
@@ -101,7 +106,9 @@ public class OrderController {
     @GetMapping("/portfolio")
     // Get the total and the available balance of the user
     public String getPortfolio(@RequestParam String userID) {
-        UserWallet wallet = userRepository.findUserByID(userID);
+        UserWallet wallet = userRepository.findUserByID(userID)
+                .orElseThrow(() -> new UserNotFoundException("No user with" +
+                        " userID:" + userID));;
         return wallet.toString();
     }
 

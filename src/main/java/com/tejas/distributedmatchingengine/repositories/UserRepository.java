@@ -5,6 +5,7 @@ import com.tejas.distributedmatchingengine.models.UserWallet;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -32,10 +33,8 @@ public class UserRepository {
     // TODO: Ensure "It's also possible that the map
     //  explicitly maps the key to null." doesn't happen or,
     //  don't return null for no user.
-    public UserWallet findUserByID(String userID) {
+    public Optional<UserWallet> findUserByID(String userID) {
         UserWallet wallet = users.get(userID);
-        if (wallet == null) throw new UserNotFoundException("No user with userID: "
-                + userID);
-        return wallet;
+        return Optional.ofNullable(wallet);
     }
 }
