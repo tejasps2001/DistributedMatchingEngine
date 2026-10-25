@@ -145,9 +145,8 @@ public class MatchingService {
                     settlementService.settle(order, newOrder);
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
-                                    new Transaction(order, newOrder,
-                                            -1 * qtyFulfilled)
-                            ));
+                                    order, newOrder, qtyFulfilled)
+                            );
                     return;
                 }
             }
