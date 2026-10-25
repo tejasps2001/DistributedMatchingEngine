@@ -79,13 +79,13 @@ public class OrderController {
             return switch (matchStatus) {
                 case Status.NEW -> "Couldn't fill order. Added to order book.";
                 case Status.PARTIALLY_FILLED -> String.format("""
-                    Filled %d shares.""",
-                        newBuyOrder.getQuantity() - newBuyOrder.getRemainingQuantity());
+                                Bought %d shares.""",
+                        newBuyOrder.getQuantity() - newBuyOrder
+                                .getRemainingQuantity());
                 case Status.FILLED -> "Order executed.";
                 default -> "No/Illegal Status provided.";
             };
-        }
-        else {
+        } else {
             return "Insufficient funds!";
         }
     }
