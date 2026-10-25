@@ -91,7 +91,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/cancel")
-    public String modifyOrder(@RequestBody Order toCancelOrder) {
+    public String cancelOrder(@RequestBody Order toCancelOrder) {
         logger.info("Received request for cancellation.");
         // If order already filled, then inform user with success code
         Status cancelStatus = toCancelOrder.cancel();
