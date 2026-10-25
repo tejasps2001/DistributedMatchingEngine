@@ -1,5 +1,6 @@
 package com.tejas.distributedmatchingengine.repositories;
 
+import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Transaction;
 import org.springframework.stereotype.Repository;
 
@@ -22,7 +23,11 @@ public class TransactionRepository {
         this.transactions = new ConcurrentSkipListMap<>();
     }
 
-    public void addTransaction(Transaction newTransaction) {
+    public void addTransaction(Order restingOrder,
+                               Order incomingOrder,
+                               int qtyFulfilled) {
+        Transaction newTransaction = new Transaction(restingOrder,
+                incomingOrder, qtyFulfilled);
         transactions.put(Instant.now(), newTransaction);
         logger.info(newTransaction.toString());
     }

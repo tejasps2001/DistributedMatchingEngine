@@ -122,8 +122,8 @@ public class MatchingService {
                     settlementService.settle(order, newOrder);
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
-                                    new Transaction(order, newOrder, qtyFulfilled)
-                            ));
+                                    order, newOrder, qtyFulfilled)
+                            );
                     orderQueue.poll();
                     return;
                 } else if (qtyLeft > 0) {
@@ -134,8 +134,8 @@ public class MatchingService {
                     settlementService.settle(order, newOrder);
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
-                                    new Transaction(order, newOrder, qtyFulfilled)
-                            ));
+                                    order, newOrder, qtyFulfilled)
+                            );
                     orderQueue.poll();
                 } else {
                     newOrder.setRemainingQuantity(0);
