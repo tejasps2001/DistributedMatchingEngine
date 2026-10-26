@@ -42,7 +42,8 @@ public class OrderRepository {
         addOrder(newSellOrder, asksBook);
     }
 
-    public void addOrder(Order newOrder, SortedMap<BigDecimal, Queue<Order>> orderBook) {
+    public void addOrder(Order newOrder,
+                         SortedMap<BigDecimal, Queue<Order>> orderBook) {
         if(orderBook.get(newOrder.getPrice()) != null) {
             var orderList = orderBook.get(newOrder.getPrice());
             orderList.add(newOrder);

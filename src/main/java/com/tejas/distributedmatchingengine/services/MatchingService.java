@@ -2,10 +2,8 @@ package com.tejas.distributedmatchingengine.services;
 
 import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
-import com.tejas.distributedmatchingengine.models.Transaction;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
-import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 
@@ -35,7 +33,6 @@ public class MatchingService {
     }
 
     public MatchingService(OrderRepository orderRepository,
-                           UserRepository userRepository,
                            SettlementService settlementService,
                            TransactionRepository transactionRepository) {
         this.orderRepository = orderRepository;
@@ -73,12 +70,6 @@ public class MatchingService {
             orderRepository.addSellOrder(newOrder);
             return newOrder.getStatus();
         }
-//        else {
-//            logger.info("Buy orders present because we have: ");
-//            for(Map.Entry<BigDecimal, Queue<Order>> suitableOrders: bidsBook.entrySet()) {
-//                logger.info(suitableOrders.getValue().toString());
-//            }
-//        }
         matchOrders(newOrder, bidsBook);
 
         // Order is not filled, add to book as a resting order
@@ -94,6 +85,19 @@ public class MatchingService {
                                     Queue<Order>> suitableOrdersMap) {
         for (Map.Entry<BigDecimal, Queue<Order>> suitableOrders :
                 suitableOrdersMap.entrySet()) {
+            // If the order in the order book goes beyond the order's
+            // bound then we stop matching & add the partially filled order to
+            // the order book
+            if (newOrder.getType() == Type.BUY &&
+                    suitableOrders.getKey().compareTo(newOrder.getPrice()) > 0) {
+                newOrder.setStatus(Status.PARTIALLY_FILLED);
+                return;
+            }
+            if (newOrder.getType() == Type.SELL &&
+                    suitableOrders.getKey().compareTo(newOrder.getPrice()) < 0) {
+                newOrder.setStatus(Status.PARTIALLY_FILLED);
+                return;
+            }
             var orderQueue = suitableOrders.getValue();
             // Return if orderQueue is empty
             if(orderQueue.isEmpty()) {
