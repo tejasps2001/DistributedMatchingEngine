@@ -104,14 +104,14 @@ public class MatchingService {
                 continue;
             }
             for (Order order : orderQueue) {
-                logger.info(String.format("""
-                            \n%s is suitable for the incoming %s.
-                        """, order.toCompactString(), newOrder.toCompactString()));
                 if (order.getStatus() == Status.CANCELLED) {
                     settlementService.settleCancellation(order);
                     orderQueue.poll();
                     continue;
                 }
+                logger.info(String.format("""
+                            \n%s is suitable for the incoming %s.
+                        """, order.toCompactString(), newOrder.toCompactString()));
                 var qtyFulfilled = Math.min(newOrder.getRemainingQuantity(), order.getRemainingQuantity());
                 var qtyLeft = newOrder.getRemainingQuantity() - order.getRemainingQuantity();
                 if (qtyLeft == 0) {
