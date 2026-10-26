@@ -15,9 +15,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +45,7 @@ public class MatchingServiceUnitTests {
         Order sellOrder = new Order("user124",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
-        Queue<Order> sellOrderQueue = new ArrayDeque<Order>();
+        Queue<Order> sellOrderQueue = new ArrayDeque<>();
         sellOrderQueue.add(sellOrder);
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -76,7 +76,7 @@ public class MatchingServiceUnitTests {
         Order sellOrder4 = new Order("user124",
                 Type.SELL, BigDecimal.valueOf(12.00), 5);
 
-        Queue<Order> sellOrderQueue = new ArrayDeque<Order>(List.of(sellOrder1,
+        Queue<Order> sellOrderQueue = new ArrayDeque<>(List.of(sellOrder1,
                 sellOrder2, sellOrder3, sellOrder4));
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -101,7 +101,7 @@ public class MatchingServiceUnitTests {
         Order sellOrder = new Order("user124",
                 Type.SELL, BigDecimal.valueOf(12.00), 10);
 
-        Queue<Order> sellOrderQueue = new ArrayDeque<Order>();
+        Queue<Order> sellOrderQueue = new ArrayDeque<>();
         sellOrderQueue.add(sellOrder);
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -130,7 +130,7 @@ public class MatchingServiceUnitTests {
         Order sellOrder3 = new Order("user126",
                 Type.SELL, BigDecimal.valueOf(12.00), 5);
 
-        Queue<Order> sellOrderQueue = new ArrayDeque<Order>(List.of(sellOrder1,
+        Queue<Order> sellOrderQueue = new ArrayDeque<>(List.of(sellOrder1,
                 sellOrder2, sellOrder3));
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -153,7 +153,7 @@ public class MatchingServiceUnitTests {
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
 
         // Empty SELL Queue
-        Queue<Order> sellOrderQueue = new ArrayDeque<Order>();
+        Queue<Order> sellOrderQueue = new ArrayDeque<>();
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.naturalOrder());
@@ -201,7 +201,7 @@ public class MatchingServiceUnitTests {
         Order buyOrder = new Order("user124",
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
 
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        Queue<Order> buyOrderQueue = new ArrayDeque<>();
         buyOrderQueue.add(buyOrder);
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -232,7 +232,7 @@ public class MatchingServiceUnitTests {
         Order buyOrder4 = new Order("user124",
                 Type.BUY, BigDecimal.valueOf(12.00), 5);
 
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>(List.of(buyOrder1,
+        Queue<Order> buyOrderQueue = new ArrayDeque<>(List.of(buyOrder1,
                 buyOrder2, buyOrder3, buyOrder4));
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -257,7 +257,7 @@ public class MatchingServiceUnitTests {
         Order buyOrder = new Order("user124",
                 Type.BUY, BigDecimal.valueOf(12.00), 10);
 
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        Queue<Order> buyOrderQueue = new ArrayDeque<>();
         buyOrderQueue.add(buyOrder);
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -286,7 +286,7 @@ public class MatchingServiceUnitTests {
         Order buyOrder3 = new Order("user126",
                 Type.BUY, BigDecimal.valueOf(12.00), 5);
 
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>(List.of(buyOrder1,
+        Queue<Order> buyOrderQueue = new ArrayDeque<>(List.of(buyOrder1,
                 buyOrder2, buyOrder3));
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -309,7 +309,7 @@ public class MatchingServiceUnitTests {
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
         // Empty SELL Queue
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        Queue<Order> buyOrderQueue = new ArrayDeque<>();
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.naturalOrder());
@@ -357,7 +357,7 @@ public class MatchingServiceUnitTests {
         Order incomingOrder = new Order("user124",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        Queue<Order> buyOrderQueue = new ArrayDeque<>();
         buyOrderQueue.add(restingOrder);
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -386,7 +386,7 @@ public class MatchingServiceUnitTests {
         Order incomingOrder = new Order("user124",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        Queue<Order> buyOrderQueue = new ArrayDeque<>();
         buyOrderQueue.add(restingOrder);
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -415,7 +415,7 @@ public class MatchingServiceUnitTests {
         Order incomingOrder = new Order("user124",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        Queue<Order> buyOrderQueue = new ArrayDeque<>();
         buyOrderQueue.add(restingOrder);
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -449,7 +449,7 @@ public class MatchingServiceUnitTests {
         Order incomingOrder = new Order("user127",
                 Type.SELL, BigDecimal.valueOf(12.00), 200);
 
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>(
+        Queue<Order> buyOrderQueue = new ArrayDeque<>(
                 List.of(restingOrder1,
                         restingOrder2,
                         restingOrder3,
@@ -497,7 +497,7 @@ public class MatchingServiceUnitTests {
         Order incomingOrder = new Order("user127",
                 Type.SELL, BigDecimal.valueOf(12.00), 200);
 
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>(
+        Queue<Order> buyOrderQueue = new ArrayDeque<>(
                 List.of(restingOrder1,
                         restingOrder2,
                         restingOrder3,
@@ -550,7 +550,7 @@ public class MatchingServiceUnitTests {
         Order incomingOrder = new Order("user127",
                 Type.SELL, BigDecimal.valueOf(12.00), 220);
 
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>(
+        Queue<Order> buyOrderQueue = new ArrayDeque<>(
                 List.of(restingOrder1,
                         restingOrder2,
                         restingOrder3,
@@ -590,7 +590,7 @@ public class MatchingServiceUnitTests {
         Order incomingOrder = new Order("user124",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
-        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        Queue<Order> buyOrderQueue = new ArrayDeque<>();
         buyOrderQueue.add(restingOrder);
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
@@ -605,25 +605,27 @@ public class MatchingServiceUnitTests {
     }
 
     @Test
-    @DisplayName("Test whether there is a buyer price improvement and the extra" +
-            " money allocated is refunded to the buyer during settlement.")
+    @DisplayName("Test whether there is a buyer price improvement" +
+            " during an aggressive cross edge.")
     public void aggressiveBuyCrossEdge() {
         Order restingOrder1 = new Order("user1243",
                 Type.SELL, BigDecimal.valueOf(100.00), 10);
         // Add other unsuitable orders too to verify cross-edge is handled
         // properly
-        Order restingOrder2 = new Order("user1253",
+        Order unsuitableRestingOrder2 = new Order("user1253",
                 Type.SELL, BigDecimal.valueOf(105.00), 10);
 
         Order incomingOrder = new Order("user134",
                 Type.BUY, BigDecimal.valueOf(105.00), 10);
 
-        Queue<Order> sellOrderQueue = new ArrayDeque<Order>(List.of(
-                restingOrder1, restingOrder2));
+        Queue<Order> sellOrderQueue1 = new ArrayDeque<>(List.of(restingOrder1));
+        Queue<Order> sellOrderQueue2 = new ArrayDeque<>(
+                List.of(unsuitableRestingOrder2));
 
         SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.naturalOrder());
-        orderBook.put(BigDecimal.valueOf(100.00), sellOrderQueue);
+        orderBook.put(BigDecimal.valueOf(100.00), sellOrderQueue1);
+        orderBook.put(BigDecimal.valueOf(105.00), sellOrderQueue2);
 
         matchingService.matchOrders(incomingOrder, orderBook);
 
@@ -637,4 +639,149 @@ public class MatchingServiceUnitTests {
         verify(transactionRepository).addTransaction(
                 restingOrder1, incomingOrder, 10);
     }
+
+    @Test
+    @DisplayName("Test whether there is a buyer price improvement\" +\n" +
+            "            \" during an aggressive cross edge.")
+    public void aggressiveSellCrossEdge() {
+        Order restingOrder1 = new Order("user1243",
+                Type.BUY, BigDecimal.valueOf(100.00), 10);
+        // Add other unsuitable orders too to verify cross-edge is handled
+        // properly
+        Order unsuitableRestingOrder2 = new Order("user1253",
+                Type.BUY, BigDecimal.valueOf(95.00), 10);
+
+        Order incomingOrder = new Order("user134",
+                Type.SELL, BigDecimal.valueOf(95.00), 10);
+
+        Queue<Order> buyOrderQueue1 = new ArrayDeque<>(List.of(restingOrder1));
+        Queue<Order> buyOrderQueue2 = new ArrayDeque<>(
+                List.of(unsuitableRestingOrder2));
+
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
+                new TreeMap<>(Comparator.reverseOrder());
+        orderBook.put(BigDecimal.valueOf(100.00), buyOrderQueue1);
+        orderBook.put(BigDecimal.valueOf(95.00), buyOrderQueue2);
+
+        matchingService.matchOrders(incomingOrder, orderBook);
+
+        assertEquals(0, incomingOrder.getRemainingQuantity());
+        assertEquals(Status.FILLED, incomingOrder.getStatus());
+        assertEquals(0, restingOrder1.getRemainingQuantity());
+        // Verification of cross-edge by checking the resting order's price
+        assertEquals(BigDecimal.valueOf(100.00), restingOrder1.getPrice());
+        assertEquals(Status.FILLED, restingOrder1.getStatus());
+        verify(settlementService).settle(restingOrder1, incomingOrder, 10);
+        verify(transactionRepository).addTransaction(
+                restingOrder1, incomingOrder, 10);
+    }
+
+    @Test
+    @DisplayName("Test whether there is a buyer price improvement\" +\n" +
+            "            \" during an aggressive cross edge covering orders at" +
+            " multiple price levels. The matching should stop when the price " +
+            "level goes beyond the incoming order's bounds.")
+    public void multiLevelSweepBuyCrossEdgeWithResidualRestingOrder() {
+        Order restingOrder1 = new Order("user1243",
+                Type.SELL, BigDecimal.valueOf(100.00), 5);
+        Order restingOrder2 = new Order("user1253",
+                Type.SELL, BigDecimal.valueOf(102.00), 5);
+        Order unsuitableRestingOrder3 = new Order("user1464",
+                Type.SELL, BigDecimal.valueOf(106.00), 5);
+
+        Order incomingOrder = new Order("user134",
+                Type.BUY, BigDecimal.valueOf(105.00), 12);
+
+        Queue<Order> sellOrderQueue1 = new ArrayDeque<>(List.of(restingOrder1));
+        Queue<Order> sellOrderQueue2 = new ArrayDeque<>(List.of(restingOrder2));
+        Queue<Order> sellOrderQueue3 = new ArrayDeque<>(
+                List.of(unsuitableRestingOrder3));
+
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
+                new TreeMap<>(Comparator.naturalOrder());
+        orderBook.put(BigDecimal.valueOf(100.00), sellOrderQueue1);
+        orderBook.put(BigDecimal.valueOf(102.00), sellOrderQueue2);
+        orderBook.put(BigDecimal.valueOf(106.00), sellOrderQueue3);
+
+        matchingService.matchOrders(incomingOrder, orderBook);
+
+        assertEquals(2, incomingOrder.getRemainingQuantity());
+        assertEquals(Status.PARTIALLY_FILLED, incomingOrder.getStatus());
+
+        assertEquals(0, restingOrder1.getRemainingQuantity());
+        assertEquals(Status.FILLED, restingOrder1.getStatus());
+
+        assertEquals(0, restingOrder2.getRemainingQuantity());
+        assertEquals(Status.FILLED, restingOrder2.getStatus());
+
+        assertEquals(5, unsuitableRestingOrder3.getRemainingQuantity());
+        assertEquals(Status.NEW, unsuitableRestingOrder3.getStatus());
+        assertFalse(sellOrderQueue3.isEmpty());
+
+        verify(settlementService).settle(restingOrder1, incomingOrder, 5);
+        verify(settlementService).settle(restingOrder2, incomingOrder, 5);
+        verify(settlementService, never()).settle(
+                unsuitableRestingOrder3, incomingOrder, 2);
+        verify(transactionRepository).addTransaction(
+                restingOrder1, incomingOrder, 5);
+        verify(transactionRepository).addTransaction(
+                restingOrder2, incomingOrder, 5);
+        verify(transactionRepository, never()).addTransaction(
+                unsuitableRestingOrder3, incomingOrder, 2);
+    }
+
+    @Test
+    @DisplayName("Test whether there is a seller price improvement\" +\n" +
+            "            \" during an aggressive cross edge covering orders at" +
+            " multiple price levels. The matching should stop when the price " +
+            "level goes beyond the incoming order's bounds.")
+    public void multiLevelSweepSellCrossEdgeWithResidualRestingOrder() {
+        Order restingOrder1 = new Order("user1243",
+                Type.BUY, BigDecimal.valueOf(106.00), 5);
+        Order restingOrder2 = new Order("user1253",
+                Type.BUY, BigDecimal.valueOf(102.00), 5);
+        Order unsuitableRestingOrder3 = new Order("user1464",
+                Type.BUY, BigDecimal.valueOf(100.00), 5);
+
+        Order incomingOrder = new Order("user134",
+                Type.SELL, BigDecimal.valueOf(102.00), 12);
+
+        Queue<Order> buyOrderQueue1 = new ArrayDeque<>(List.of(restingOrder1));
+        Queue<Order> buyOrderQueue2 = new ArrayDeque<>(List.of(restingOrder2));
+        Queue<Order> buyOrderQueue3 = new ArrayDeque<>(
+                List.of(unsuitableRestingOrder3));
+
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
+                new TreeMap<>(Comparator.reverseOrder());
+        orderBook.put(BigDecimal.valueOf(106.00), buyOrderQueue1);
+        orderBook.put(BigDecimal.valueOf(102.00), buyOrderQueue2);
+        orderBook.put(BigDecimal.valueOf(100.00), buyOrderQueue3);
+
+        matchingService.matchOrders(incomingOrder, orderBook);
+
+        assertEquals(2, incomingOrder.getRemainingQuantity());
+        assertEquals(Status.PARTIALLY_FILLED, incomingOrder.getStatus());
+
+        assertEquals(0, restingOrder1.getRemainingQuantity());
+        assertEquals(Status.FILLED, restingOrder1.getStatus());
+
+        assertEquals(0, restingOrder2.getRemainingQuantity());
+        assertEquals(Status.FILLED, restingOrder2.getStatus());
+
+        assertEquals(5, unsuitableRestingOrder3.getRemainingQuantity());
+        assertEquals(Status.NEW, unsuitableRestingOrder3.getStatus());
+
+        verify(settlementService).settle(restingOrder1, incomingOrder, 5);
+        verify(settlementService).settle(restingOrder2, incomingOrder, 5);
+        verify(settlementService, never()).settle(
+                unsuitableRestingOrder3, incomingOrder, 2);
+        verify(transactionRepository).addTransaction(
+                restingOrder1, incomingOrder, 5);
+        verify(transactionRepository).addTransaction(
+                restingOrder2, incomingOrder, 5);
+        verify(transactionRepository, never()).addTransaction(
+                unsuitableRestingOrder3, incomingOrder, 2);
+    }
+
+
 }
