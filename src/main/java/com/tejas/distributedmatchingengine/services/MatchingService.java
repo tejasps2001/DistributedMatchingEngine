@@ -48,15 +48,14 @@ public class MatchingService {
     // concurrent matching) because the shared order books are updated.
     // Therefore, not synchronizing.
     public synchronized Status matchBuy(Order newOrder) {
-        var suitableOrdersMap = orderRepository.getSellOrders(
-                newOrder.getPrice());
+        var asksBook = orderRepository.getAsksBook();
         // No orders to match to; add to order book
-        if (suitableOrdersMap == null) {
+        if (asksBook == null) {
             logger.info("No sell orders to match to!");
             orderRepository.addBuyOrder(newOrder);
             return newOrder.getStatus();
         }
-        matchOrders(newOrder, suitableOrdersMap);
+        matchOrders(newOrder, asksBook);
 
         // Order is not filled, add to book as a resting order
         if (newOrder.getStatus() == Status.PARTIALLY_FILLED ||
@@ -67,21 +66,20 @@ public class MatchingService {
     }
 
     public synchronized Status matchSell(Order newOrder) {
-        var suitableOrdersMap = orderRepository.getBuyOrders(
-                newOrder.getPrice());
+        var bidsBook = orderRepository.getBidsBook();
         // No orders to match to; add to order book
-        if (suitableOrdersMap == null) {
+        if (bidsBook == null) {
             logger.info("No buy orders to match to!");
             orderRepository.addSellOrder(newOrder);
             return newOrder.getStatus();
         }
 //        else {
 //            logger.info("Buy orders present because we have: ");
-//            for(Map.Entry<BigDecimal, Queue<Order>> suitableOrders: suitableOrdersMap.entrySet()) {
+//            for(Map.Entry<BigDecimal, Queue<Order>> suitableOrders: bidsBook.entrySet()) {
 //                logger.info(suitableOrders.getValue().toString());
 //            }
 //        }
-        matchOrders(newOrder, suitableOrdersMap);
+        matchOrders(newOrder, bidsBook);
 
         // Order is not filled, add to book as a resting order
         if (newOrder.getStatus() == Status.PARTIALLY_FILLED ||

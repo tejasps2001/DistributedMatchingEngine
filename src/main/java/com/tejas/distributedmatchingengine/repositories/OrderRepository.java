@@ -2,13 +2,15 @@ package com.tejas.distributedmatchingengine.repositories;
 
 import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.*;
 
-//@Getter
-//@Setter
+@Getter
+@Setter
 @Repository
 public class OrderRepository {
     private final SortedMap<BigDecimal, Queue<Order>> bidsBook;
@@ -18,35 +20,6 @@ public class OrderRepository {
         // Bids book sorted in descending order & asks book sorted in ascending order
         bidsBook = new TreeMap<>(Comparator.reverseOrder());
         asksBook = new TreeMap<>(Comparator.naturalOrder());
-    }
-
-    /**
-     * Get BUY orders that is greater than or equal to the specified price.
-     *
-     * @param price The minimum price of the resting BUY orders
-     * @return a map of orders (sorted by descending price) from the book
-     *          that is greater than or equal to {@code price}, or {@code null} if no
-     *          resting order satisfies this criterion.
-      */
-    public SortedMap<BigDecimal, Queue<Order>> getBuyOrders(BigDecimal price) {
-        if(bidsBook.get(price) == null) return null;
-        // I don't necessarily need to send only "remainingQuantity" number of orders
-        // since the receiver can use what it needs and stop, right? So, removing the
-        // "remainingQuantity" parameter
-        return bidsBook.tailMap(price);
-    }
-
-    /**
-     * Get SELL orders that is less than or equal to the specific price.
-     *
-     * @param price The maximum price of the resting SELL orders
-     * @return a map of orders (sorted by ascending price) from the book
-     *          that greater than or equal to {@code price}, or {@code null} if no
-     *          resting order satisfies this criterion.
-     */
-    public SortedMap<BigDecimal, Queue<Order>> getSellOrders(BigDecimal price) {
-        if(asksBook.get(price) == null) return null;
-        return asksBook.tailMap(price);
     }
 
     /**
@@ -78,7 +51,7 @@ public class OrderRepository {
         var newQueue = new ArrayDeque<Order>();
         newQueue.add(newOrder);
         orderBook.put(newOrder.getPrice(), newQueue);
-        // TODO: Don't add it if it isn't cancelled!
+        // TODO: Don't add it if it is cancelled!
     }
 
     // A list is enough. No need of a queue.

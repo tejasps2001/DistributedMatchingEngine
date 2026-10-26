@@ -2,7 +2,6 @@ package com.tejas.distributedmatchingengine.services;
 
 import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
-import com.tejas.distributedmatchingengine.models.Transaction;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
@@ -49,12 +48,12 @@ public class MatchingServiceUnitTests {
         Queue<Order> sellOrderQueue = new ArrayDeque<Order>();
         sellOrderQueue.add(sellOrder);
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.naturalOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), sellOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), sellOrderQueue);
 
-        given(orderRepository.getSellOrders(buyOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getAsksBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchBuy(buyOrder);
 
@@ -80,12 +79,12 @@ public class MatchingServiceUnitTests {
         Queue<Order> sellOrderQueue = new ArrayDeque<Order>(List.of(sellOrder1,
                 sellOrder2, sellOrder3, sellOrder4));
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.naturalOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), sellOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), sellOrderQueue);
 
-        given(orderRepository.getSellOrders(buyOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getAsksBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchBuy(buyOrder);
 
@@ -105,12 +104,12 @@ public class MatchingServiceUnitTests {
         Queue<Order> sellOrderQueue = new ArrayDeque<Order>();
         sellOrderQueue.add(sellOrder);
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.naturalOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), sellOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), sellOrderQueue);
 
-        given(orderRepository.getSellOrders(buyOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getAsksBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchBuy(buyOrder);
 
@@ -134,12 +133,12 @@ public class MatchingServiceUnitTests {
         Queue<Order> sellOrderQueue = new ArrayDeque<Order>(List.of(sellOrder1,
                 sellOrder2, sellOrder3));
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.naturalOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), sellOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), sellOrderQueue);
 
-        given(orderRepository.getSellOrders(buyOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getAsksBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchBuy(buyOrder);
 
@@ -156,12 +155,12 @@ public class MatchingServiceUnitTests {
         // Empty SELL Queue
         Queue<Order> sellOrderQueue = new ArrayDeque<Order>();
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.naturalOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), sellOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), sellOrderQueue);
 
-        given(orderRepository.getSellOrders(buyOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getAsksBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchBuy(buyOrder);
 
@@ -178,11 +177,11 @@ public class MatchingServiceUnitTests {
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
 
         // Empty asks book
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.naturalOrder());
 
-        given(orderRepository.getSellOrders(buyOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getAsksBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchBuy(buyOrder);
 
@@ -205,12 +204,12 @@ public class MatchingServiceUnitTests {
         Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
         buyOrderQueue.add(buyOrder);
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.reverseOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getBidsBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchSell(sellOrder);
 
@@ -236,12 +235,12 @@ public class MatchingServiceUnitTests {
         Queue<Order> buyOrderQueue = new ArrayDeque<Order>(List.of(buyOrder1,
                 buyOrder2, buyOrder3, buyOrder4));
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.reverseOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getBidsBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchSell(sellOrder);
 
@@ -261,12 +260,12 @@ public class MatchingServiceUnitTests {
         Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
         buyOrderQueue.add(buyOrder);
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.reverseOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getBidsBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchSell(sellOrder);
 
@@ -290,12 +289,12 @@ public class MatchingServiceUnitTests {
         Queue<Order> buyOrderQueue = new ArrayDeque<Order>(List.of(buyOrder1,
                 buyOrder2, buyOrder3));
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.reverseOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getBidsBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchSell(sellOrder);
 
@@ -312,12 +311,12 @@ public class MatchingServiceUnitTests {
         // Empty SELL Queue
         Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.naturalOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getBidsBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchSell(sellOrder);
 
@@ -334,11 +333,11 @@ public class MatchingServiceUnitTests {
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
         // Empty bids book
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.naturalOrder());
 
-        given(orderRepository.getBuyOrders(sellOrder.getPrice()))
-                .willReturn(suitableOrdersMap);
+        given(orderRepository.getBidsBook())
+                .willReturn(orderBook);
 
         Status orderStatus = matchingService.matchSell(sellOrder);
 
@@ -361,11 +360,11 @@ public class MatchingServiceUnitTests {
         Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
         buyOrderQueue.add(restingOrder);
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.reverseOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+        matchingService.matchOrders(incomingOrder, orderBook);
 
         assertEquals(0, incomingOrder.getRemainingQuantity());
         assertEquals(Status.FILLED, incomingOrder.getStatus());
@@ -390,11 +389,11 @@ public class MatchingServiceUnitTests {
         Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
         buyOrderQueue.add(restingOrder);
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.reverseOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+        matchingService.matchOrders(incomingOrder, orderBook);
 
         assertEquals(10, incomingOrder.getRemainingQuantity());
         assertEquals(Status.PARTIALLY_FILLED, incomingOrder.getStatus());
@@ -419,11 +418,11 @@ public class MatchingServiceUnitTests {
         Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
         buyOrderQueue.add(restingOrder);
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.reverseOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+        matchingService.matchOrders(incomingOrder, orderBook);
 
         assertEquals(0, incomingOrder.getRemainingQuantity());
         assertEquals(Status.FILLED, incomingOrder.getStatus());
@@ -456,11 +455,11 @@ public class MatchingServiceUnitTests {
                         restingOrder3,
                         restingOrder4));
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.reverseOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+        matchingService.matchOrders(incomingOrder, orderBook);
 
 
         assertEquals(0, incomingOrder.getRemainingQuantity());
@@ -503,11 +502,11 @@ public class MatchingServiceUnitTests {
                         restingOrder3,
                         restingOrder4));
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.reverseOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+        matchingService.matchOrders(incomingOrder, orderBook);
 
 
         assertEquals(0, incomingOrder.getRemainingQuantity());
@@ -554,11 +553,11 @@ public class MatchingServiceUnitTests {
                         restingOrder3,
                         restingOrder4));
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.reverseOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+        matchingService.matchOrders(incomingOrder, orderBook);
 
         assertEquals(20, incomingOrder.getRemainingQuantity());
         assertEquals(Status.PARTIALLY_FILLED, incomingOrder.getStatus());
@@ -590,13 +589,13 @@ public class MatchingServiceUnitTests {
         Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
         buyOrderQueue.add(restingOrder);
 
-        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
                 new TreeMap<>(Comparator.reverseOrder());
-        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+        orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
         restingOrder.cancel();
 
-        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+        matchingService.matchOrders(incomingOrder, orderBook);
 
         assertFalse(buyOrderQueue.contains(restingOrder));
     }
