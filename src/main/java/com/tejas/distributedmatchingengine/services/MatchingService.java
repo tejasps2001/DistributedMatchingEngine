@@ -9,6 +9,7 @@ import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -109,6 +110,16 @@ public class MatchingService {
                 if (order.getStatus() == Status.CANCELLED) {
                     settlementService.settleCancellation(order);
                     orderQueue.poll();
+                    continue;
+                }
+                // Self-Trade Prevention
+                // Cancel the incoming order
+                if (Objects.equals(order.getUserId(), newOrder.getUserId())) {
+                    logger.info("An attempt to self-trade was detected.");
+                    logger.info(String.format(
+                            "Cancelling %s accordingly.", newOrder));
+                    newOrder.cancel();
+                    settlementService.settleCancellation(newOrder);
                     continue;
                 }
                 logger.info(String.format("""

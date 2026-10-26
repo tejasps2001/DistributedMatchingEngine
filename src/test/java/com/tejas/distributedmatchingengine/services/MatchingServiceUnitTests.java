@@ -783,5 +783,25 @@ public class MatchingServiceUnitTests {
                 unsuitableRestingOrder3, incomingOrder, 2);
     }
 
+    @Test
+    @DisplayName("Test that the self-trade prevention works correctly.")
+    public void selfTradePrevention() {
+        Order buyOrder = new Order("user123",
+                Type.BUY, BigDecimal.valueOf(12.00), 20);
 
+        Order sellOrder = new Order("user123",
+                Type.SELL, BigDecimal.valueOf(12.00), 20);
+
+        Queue<Order> sellOrderQueue = new ArrayDeque<>();
+        sellOrderQueue.add(sellOrder);
+
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
+                new TreeMap<>(Comparator.naturalOrder());
+        orderBook.put(BigDecimal.valueOf(12.00), sellOrderQueue);
+
+        matchingService.matchOrders(buyOrder, orderBook);
+
+        verify(settlementService).settleCancellation(buyOrder);
+        assertEquals(Status.CANCELLED, buyOrder.getStatus());
+    }
 }
