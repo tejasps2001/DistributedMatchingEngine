@@ -2,6 +2,7 @@ package com.tejas.distributedmatchingengine.services;
 
 import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
+import com.tejas.distributedmatchingengine.models.Transaction;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -345,5 +347,257 @@ public class MatchingServiceUnitTests {
         verify(orderRepository).addSellOrder(sellOrder);
     }
 
+    // Test core matching logic
+    @Test
+    @DisplayName("Test whether two orders are successfully matched together and" +
+            " fully filled when no exception occurs.")
+    public void twoOrdersCompletelyMatched() {
+        Order restingOrder = new Order("user123",
+                Type.BUY, BigDecimal.valueOf(12.00), 20);
 
+        Order incomingOrder = new Order("user124",
+                Type.SELL, BigDecimal.valueOf(12.00), 20);
+
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        buyOrderQueue.add(restingOrder);
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.reverseOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+
+        assertEquals(0, incomingOrder.getRemainingQuantity());
+        assertEquals(Status.FILLED, incomingOrder.getStatus());
+        assertEquals(0, restingOrder.getRemainingQuantity());
+        assertEquals(Status.FILLED, restingOrder.getStatus());
+        verify(settlementService).settle(restingOrder, incomingOrder);
+        verify(transactionRepository).addTransaction(
+                        restingOrder, incomingOrder, 20);
+        assertFalse(buyOrderQueue.contains(restingOrder));
+    }
+
+    @Test
+    @DisplayName("Test whether an incoming order is partially filled and a" +
+            " resting order is fully filled when no exception occurs.")
+    public void incomingPartiallyFilledRestingFullyFilled() {
+        Order restingOrder = new Order("user123",
+                Type.BUY, BigDecimal.valueOf(12.00), 10);
+
+        Order incomingOrder = new Order("user124",
+                Type.SELL, BigDecimal.valueOf(12.00), 20);
+
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        buyOrderQueue.add(restingOrder);
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.reverseOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+
+        assertEquals(10, incomingOrder.getRemainingQuantity());
+        assertEquals(Status.PARTIALLY_FILLED, incomingOrder.getStatus());
+        assertEquals(0, restingOrder.getRemainingQuantity());
+        assertEquals(Status.FILLED, restingOrder.getStatus());
+        verify(settlementService).settle(restingOrder, incomingOrder);
+        verify(transactionRepository).addTransaction(
+                restingOrder, incomingOrder, 10);
+        assertFalse(buyOrderQueue.contains(restingOrder));
+    }
+
+    @Test
+    @DisplayName("Test whether an incoming order is fully filled and a" +
+            " resting order is partially filled when no exception occurs.")
+    public void incomingFullyFilledRestingPartiallyFilled() {
+        Order restingOrder = new Order("user123",
+                Type.BUY, BigDecimal.valueOf(12.00), 30);
+
+        Order incomingOrder = new Order("user124",
+                Type.SELL, BigDecimal.valueOf(12.00), 20);
+
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        buyOrderQueue.add(restingOrder);
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.reverseOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+
+        assertEquals(0, incomingOrder.getRemainingQuantity());
+        assertEquals(Status.FILLED, incomingOrder.getStatus());
+        assertEquals(10, restingOrder.getRemainingQuantity());
+        assertEquals(Status.PARTIALLY_FILLED, restingOrder.getStatus());
+        verify(settlementService).settle(restingOrder, incomingOrder);
+        verify(transactionRepository).addTransaction(
+                restingOrder, incomingOrder, 20);
+    }
+
+    @Test
+    @DisplayName("Test whether an incoming order is matched properly with" +
+            " multiple resting orders, fully filling all the resting orders.")
+    public void incomingFullyFilledMultipleRestingFullyFilled() {
+        Order restingOrder1 = new Order("user123",
+                Type.BUY, BigDecimal.valueOf(12.00), 30);
+        Order restingOrder2 = new Order("user124",
+                Type.BUY, BigDecimal.valueOf(12.00), 60);
+        Order restingOrder3 = new Order("user125",
+                Type.BUY, BigDecimal.valueOf(12.00), 90);
+        Order restingOrder4 = new Order("user126",
+                Type.BUY, BigDecimal.valueOf(12.00), 20);
+
+        Order incomingOrder = new Order("user127",
+                Type.SELL, BigDecimal.valueOf(12.00), 200);
+
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>(
+                List.of(restingOrder1,
+                        restingOrder2,
+                        restingOrder3,
+                        restingOrder4));
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.reverseOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+
+
+        assertEquals(0, incomingOrder.getRemainingQuantity());
+        assertEquals(Status.FILLED, incomingOrder.getStatus());
+
+        int[] qtyFulfilled = {30, 60, 90, 20};
+        Order[] restingOrders = {restingOrder1,
+                restingOrder2,
+                restingOrder3,
+                restingOrder4};
+        for(int i = 0; i < 4; i++) {
+            assertEquals(0, restingOrders[i].getRemainingQuantity());
+            assertEquals(Status.FILLED, restingOrders[i].getStatus());
+            verify(settlementService).settle(restingOrders[i], incomingOrder);
+            verify(transactionRepository).addTransaction(
+                    restingOrders[i], incomingOrder, qtyFulfilled[i]);
+        }
+    }
+
+    @Test
+    @DisplayName("Test whether an incoming order is matched properly with" +
+            " multiple resting orders, partially filling some of the resting" +
+            " orders.")
+    public void incomingFullyFilledMultipleRestingPartiallyFilled() {
+        Order restingOrder1 = new Order("user123",
+                Type.BUY, BigDecimal.valueOf(12.00), 30);
+        Order restingOrder2 = new Order("user124",
+                Type.BUY, BigDecimal.valueOf(12.00), 60);
+        Order restingOrder3 = new Order("user125",
+                Type.BUY, BigDecimal.valueOf(12.00), 90);
+        Order restingOrder4 = new Order("user126",
+                Type.BUY, BigDecimal.valueOf(12.00), 30);
+
+        Order incomingOrder = new Order("user127",
+                Type.SELL, BigDecimal.valueOf(12.00), 200);
+
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>(
+                List.of(restingOrder1,
+                        restingOrder2,
+                        restingOrder3,
+                        restingOrder4));
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.reverseOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+
+
+        assertEquals(0, incomingOrder.getRemainingQuantity());
+        assertEquals(Status.FILLED, incomingOrder.getStatus());
+
+        int[] qtyFulfilled = {30, 60, 90, 20};
+        Order[] restingOrders = {restingOrder1,
+                restingOrder2,
+                restingOrder3};
+        for(int i = 0; i < 3; i++) {
+            assertEquals(0, restingOrders[i].getRemainingQuantity());
+            assertEquals(Status.FILLED, restingOrders[i].getStatus());
+            verify(settlementService).settle(restingOrders[i], incomingOrder);
+            verify(transactionRepository).addTransaction(
+                    restingOrders[i], incomingOrder, qtyFulfilled[i]);
+        }
+        assertEquals(10, restingOrder4.getRemainingQuantity());
+        assertEquals(Status.PARTIALLY_FILLED, restingOrder4.getStatus());
+        verify(settlementService).settle(restingOrder4, incomingOrder);
+        verify(transactionRepository).addTransaction(
+                restingOrder4, incomingOrder, 20);
+    }
+
+    @Test
+    @DisplayName("Test whether an incoming order is partially filled by" +
+            " multiple resting orders, fully filling all of the resting" +
+            " orders.")
+    public void incomingPartiallyFilledMultipleRestingFullyFilled() {
+        Order restingOrder1 = new Order("user123",
+                Type.BUY, BigDecimal.valueOf(12.00), 30);
+        Order restingOrder2 = new Order("user124",
+                Type.BUY, BigDecimal.valueOf(12.00), 60);
+        Order restingOrder3 = new Order("user125",
+                Type.BUY, BigDecimal.valueOf(12.00), 90);
+        Order restingOrder4 = new Order("user126",
+                Type.BUY, BigDecimal.valueOf(12.00), 20);
+
+        Order incomingOrder = new Order("user127",
+                Type.SELL, BigDecimal.valueOf(12.00), 220);
+
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>(
+                List.of(restingOrder1,
+                        restingOrder2,
+                        restingOrder3,
+                        restingOrder4));
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.reverseOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+
+        assertEquals(20, incomingOrder.getRemainingQuantity());
+        assertEquals(Status.PARTIALLY_FILLED, incomingOrder.getStatus());
+
+        int[] qtyFulfilled = {30, 60, 90, 20};
+        Order[] restingOrders = {restingOrder1,
+                restingOrder2,
+                restingOrder3,
+                restingOrder4};
+        for(int i = 0; i < 4; i++) {
+            assertEquals(0, restingOrders[i].getRemainingQuantity());
+            assertEquals(Status.FILLED, restingOrders[i].getStatus());
+            verify(settlementService).settle(restingOrders[i], incomingOrder);
+            verify(transactionRepository).addTransaction(
+                    restingOrders[i], incomingOrder, qtyFulfilled[i]);
+        }
+    }
+
+    @Test
+    @DisplayName("Test that a cancelled order is removed from the queue when" +
+            " matchingService encounters it.")
+    public void cancelledOrderIsRemoved() {
+        Order restingOrder = new Order("user123",
+                Type.BUY, BigDecimal.valueOf(12.00), 10);
+
+        Order incomingOrder = new Order("user124",
+                Type.SELL, BigDecimal.valueOf(12.00), 20);
+
+        Queue<Order> buyOrderQueue = new ArrayDeque<Order>();
+        buyOrderQueue.add(restingOrder);
+
+        SortedMap<BigDecimal, Queue<Order>> suitableOrdersMap =
+                new TreeMap<>(Comparator.reverseOrder());
+        suitableOrdersMap.put(BigDecimal.valueOf(12.00), buyOrderQueue);
+
+        restingOrder.cancel();
+
+        matchingService.matchOrders(incomingOrder, suitableOrdersMap);
+
+        assertFalse(buyOrderQueue.contains(restingOrder));
+    }
 }
