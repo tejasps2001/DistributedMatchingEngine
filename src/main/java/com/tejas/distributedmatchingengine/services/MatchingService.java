@@ -117,7 +117,7 @@ public class MatchingService {
                     newOrder.setStatus(Status.FILLED);
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
-                    settlementService.settle(order, newOrder);
+                    settlementService.settle(order, newOrder, qtyFulfilled);
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
                                     order, newOrder, qtyFulfilled)
@@ -129,7 +129,7 @@ public class MatchingService {
                     newOrder.setStatus(Status.PARTIALLY_FILLED);
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
-                    settlementService.settle(order, newOrder);
+                    settlementService.settle(order, newOrder, qtyFulfilled);
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
                                     order, newOrder, qtyFulfilled)
@@ -140,7 +140,7 @@ public class MatchingService {
                     newOrder.setStatus(Status.FILLED);
                     order.setRemainingQuantity(-1 * qtyLeft);
                     order.setStatus(Status.PARTIALLY_FILLED);
-                    settlementService.settle(order, newOrder);
+                    settlementService.settle(order, newOrder, qtyFulfilled);
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
                                     order, newOrder, qtyFulfilled)

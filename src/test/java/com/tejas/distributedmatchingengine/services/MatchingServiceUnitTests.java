@@ -370,7 +370,7 @@ public class MatchingServiceUnitTests {
         assertEquals(Status.FILLED, incomingOrder.getStatus());
         assertEquals(0, restingOrder.getRemainingQuantity());
         assertEquals(Status.FILLED, restingOrder.getStatus());
-        verify(settlementService).settle(restingOrder, incomingOrder);
+        verify(settlementService).settle(restingOrder, incomingOrder, 20);
         verify(transactionRepository).addTransaction(
                         restingOrder, incomingOrder, 20);
         assertFalse(buyOrderQueue.contains(restingOrder));
@@ -399,7 +399,7 @@ public class MatchingServiceUnitTests {
         assertEquals(Status.PARTIALLY_FILLED, incomingOrder.getStatus());
         assertEquals(0, restingOrder.getRemainingQuantity());
         assertEquals(Status.FILLED, restingOrder.getStatus());
-        verify(settlementService).settle(restingOrder, incomingOrder);
+        verify(settlementService).settle(restingOrder, incomingOrder, 10);
         verify(transactionRepository).addTransaction(
                 restingOrder, incomingOrder, 10);
         assertFalse(buyOrderQueue.contains(restingOrder));
@@ -428,7 +428,7 @@ public class MatchingServiceUnitTests {
         assertEquals(Status.FILLED, incomingOrder.getStatus());
         assertEquals(10, restingOrder.getRemainingQuantity());
         assertEquals(Status.PARTIALLY_FILLED, restingOrder.getStatus());
-        verify(settlementService).settle(restingOrder, incomingOrder);
+        verify(settlementService).settle(restingOrder, incomingOrder, 20);
         verify(transactionRepository).addTransaction(
                 restingOrder, incomingOrder, 20);
     }
@@ -473,7 +473,8 @@ public class MatchingServiceUnitTests {
         for(int i = 0; i < 4; i++) {
             assertEquals(0, restingOrders[i].getRemainingQuantity());
             assertEquals(Status.FILLED, restingOrders[i].getStatus());
-            verify(settlementService).settle(restingOrders[i], incomingOrder);
+            verify(settlementService).settle(restingOrders[i],
+                    incomingOrder, qtyFulfilled[i]);
             verify(transactionRepository).addTransaction(
                     restingOrders[i], incomingOrder, qtyFulfilled[i]);
         }
@@ -519,13 +520,15 @@ public class MatchingServiceUnitTests {
         for(int i = 0; i < 3; i++) {
             assertEquals(0, restingOrders[i].getRemainingQuantity());
             assertEquals(Status.FILLED, restingOrders[i].getStatus());
-            verify(settlementService).settle(restingOrders[i], incomingOrder);
+            verify(settlementService).settle(restingOrders[i],
+                    incomingOrder, qtyFulfilled[i]);
             verify(transactionRepository).addTransaction(
                     restingOrders[i], incomingOrder, qtyFulfilled[i]);
         }
         assertEquals(10, restingOrder4.getRemainingQuantity());
         assertEquals(Status.PARTIALLY_FILLED, restingOrder4.getStatus());
-        verify(settlementService).settle(restingOrder4, incomingOrder);
+        verify(settlementService).settle(restingOrder4,
+                incomingOrder, 20);
         verify(transactionRepository).addTransaction(
                 restingOrder4, incomingOrder, 20);
     }
@@ -570,7 +573,8 @@ public class MatchingServiceUnitTests {
         for(int i = 0; i < 4; i++) {
             assertEquals(0, restingOrders[i].getRemainingQuantity());
             assertEquals(Status.FILLED, restingOrders[i].getStatus());
-            verify(settlementService).settle(restingOrders[i], incomingOrder);
+            verify(settlementService).settle(restingOrders[i],
+                    incomingOrder, qtyFulfilled[i]);
             verify(transactionRepository).addTransaction(
                     restingOrders[i], incomingOrder, qtyFulfilled[i]);
         }
@@ -598,5 +602,39 @@ public class MatchingServiceUnitTests {
         matchingService.matchOrders(incomingOrder, orderBook);
 
         assertFalse(buyOrderQueue.contains(restingOrder));
+    }
+
+    @Test
+    @DisplayName("Test whether there is a buyer price improvement and the extra" +
+            " money allocated is refunded to the buyer during settlement.")
+    public void aggressiveBuyCrossEdge() {
+        Order restingOrder1 = new Order("user1243",
+                Type.SELL, BigDecimal.valueOf(100.00), 10);
+        // Add other unsuitable orders too to verify cross-edge is handled
+        // properly
+        Order restingOrder2 = new Order("user1253",
+                Type.SELL, BigDecimal.valueOf(105.00), 10);
+
+        Order incomingOrder = new Order("user134",
+                Type.BUY, BigDecimal.valueOf(105.00), 10);
+
+        Queue<Order> sellOrderQueue = new ArrayDeque<Order>(List.of(
+                restingOrder1, restingOrder2));
+
+        SortedMap<BigDecimal, Queue<Order>> orderBook =
+                new TreeMap<>(Comparator.naturalOrder());
+        orderBook.put(BigDecimal.valueOf(100.00), sellOrderQueue);
+
+        matchingService.matchOrders(incomingOrder, orderBook);
+
+        assertEquals(0, incomingOrder.getRemainingQuantity());
+        assertEquals(Status.FILLED, incomingOrder.getStatus());
+        assertEquals(0, restingOrder1.getRemainingQuantity());
+        // Verification of cross-edge by checking the resting order's price
+        assertEquals(BigDecimal.valueOf(100.00), restingOrder1.getPrice());
+        assertEquals(Status.FILLED, restingOrder1.getStatus());
+        verify(settlementService).settle(restingOrder1, incomingOrder, 10);
+        verify(transactionRepository).addTransaction(
+                restingOrder1, incomingOrder, 10);
     }
 }

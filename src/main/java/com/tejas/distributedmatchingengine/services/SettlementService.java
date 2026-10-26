@@ -26,32 +26,49 @@ public class SettlementService {
     }
 
     // TODO: @Transactional
-    public void settle(Order restingOrder, Order incomingOrder) {
+    public void settle(Order restingOrder, Order incomingOrder, int qtyFulfilled) {
         settlementHandler.execute(() -> {
             if(restingOrder.getType() == Type.BUY) {
-                settleBuy(restingOrder, restingOrder.getPrice());
-                settleSell(incomingOrder, restingOrder.getPrice());
+                settleBuy(restingOrder, restingOrder.getPrice(), qtyFulfilled);
+                settleSell(incomingOrder, restingOrder.getPrice(), qtyFulfilled);
             }
             else {
-                settleBuy(incomingOrder, restingOrder.getPrice());
-                settleSell(restingOrder, restingOrder.getPrice());
+                settleBuy(incomingOrder, restingOrder.getPrice(), qtyFulfilled);
+                settleSell(restingOrder, restingOrder.getPrice(), qtyFulfilled);
             }
         });
     }
 
-    public void settleBuy(Order buyOrder, BigDecimal executionPrice) {
+    public void settleBuy(Order buyOrder,
+                          BigDecimal executionPrice,
+                          int qtyFulfilled) {
         UserWallet wallet = userRepository.findUserByID(buyOrder.getUserId())
                 .get();
-        int qtyFilled = buyOrder.getQuantity() - buyOrder.getRemainingQuantity();
 
         if (buyOrder.getStatus() == Status.PARTIALLY_FILLED ||
                 buyOrder.getStatus() == Status.FILLED) {
-            wallet.addToAvailableShares(qtyFilled);
-            wallet.addToTotalShares(qtyFilled);
+            wallet.addToAvailableShares(qtyFulfilled);
+            wallet.addToTotalShares(qtyFulfilled);
             // Ignore the boolean return value since we know for sure that
             // the funds are present
-            wallet.tryDeductFromTotalBalance(executionPrice.multiply(
-                    BigDecimal.valueOf(qtyFilled)));
+            wallet.tryDeductFromTotalBalance(buyOrder.getPrice().multiply(
+                    BigDecimal.valueOf(qtyFulfilled)));
+
+            // Refund for an aggressive buy cross-edge
+            if(buyOrder.getPrice().compareTo(executionPrice) > 0) {
+                BigDecimal buyOrderValue = buyOrder.getPrice().multiply(
+                        BigDecimal.valueOf(qtyFulfilled));
+                BigDecimal executionValue = executionPrice.multiply(
+                        BigDecimal.valueOf(qtyFulfilled));
+                BigDecimal refund = buyOrderValue.subtract(executionValue);
+                // NOTE: Can just deduct execution price * qty from total
+                //      balance above and then add refund to available
+                //      balance here but it neither reduces the complexity
+                //      of the logic nor the number of lines. So, doing it
+                //      the way which makes the operations clearer.
+                wallet.addToAvailableBalance(refund);
+                wallet.addToTotalBalance(refund);
+            }
         }
         // If for some reason, the status remains Status.NEW, log it here.
         else {
@@ -59,18 +76,30 @@ public class SettlementService {
         }
     }
 
-    public void settleSell(Order sellOrder, BigDecimal executionPrice) {
+    public void settleSell(Order sellOrder,
+                           BigDecimal executionPrice,
+                           int qtyFulfilled) {
         UserWallet wallet = userRepository.findUserByID(sellOrder.getUserId())
                 .get();
-        int qtyFilled = sellOrder.getQuantity() - sellOrder.getRemainingQuantity();
 
         if (sellOrder.getStatus() == Status.PARTIALLY_FILLED ||
                 sellOrder.getStatus() == Status.FILLED) {
-            wallet.tryDeductFromTotalShares(qtyFilled);
-            wallet.addToAvailableBalance(executionPrice.multiply(
-                    BigDecimal.valueOf(qtyFilled)));
-            wallet.addToTotalBalance(executionPrice.multiply(
-                    BigDecimal.valueOf(qtyFilled)));
+            wallet.tryDeductFromTotalShares(qtyFulfilled);
+            wallet.addToAvailableBalance(sellOrder.getPrice().multiply(
+                    BigDecimal.valueOf(qtyFulfilled)));
+            wallet.addToTotalBalance(sellOrder.getPrice().multiply(
+                    BigDecimal.valueOf(qtyFulfilled)));
+
+            // Refund for aggressive cross-edge
+            if(sellOrder.getPrice().compareTo(executionPrice) < 0) {
+                BigDecimal sellOrderValue = sellOrder.getPrice().multiply(
+                        BigDecimal.valueOf(qtyFulfilled));
+                BigDecimal executionValue = executionPrice.multiply(
+                        BigDecimal.valueOf(qtyFulfilled));
+                BigDecimal refund = executionValue.subtract(sellOrderValue);
+                wallet.addToTotalBalance(refund);
+                wallet.addToAvailableBalance(refund);
+            }
         }
         // If for some reason, the status remains Status.NEW, log it here.
         else {
