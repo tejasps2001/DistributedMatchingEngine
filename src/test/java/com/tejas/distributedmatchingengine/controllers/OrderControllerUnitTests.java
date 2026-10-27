@@ -332,4 +332,12 @@ class OrderControllerUnitTests {
         verify(userRepository)
                 .addUser(BigDecimal.valueOf(1000.00));
     }
+
+    @Test
+    @DisplayName("Test that a new user is not created if a negative balance " +
+            "is given.")
+    public void doNotCreateUserIfNegativeBalanceGiven() {
+        String result = orderController.createNewUser(-100.00);
+        assertEquals("Negative balance not allowed!", result);
+    }
 }

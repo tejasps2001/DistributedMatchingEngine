@@ -108,13 +108,14 @@ public class OrderController {
     public String getPortfolio(@RequestParam String userID) {
         UserWallet wallet = userRepository.findUserByID(userID)
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
-                        " userID:" + userID));;
+                        " userID:" + userID));
         return wallet.toString();
     }
 
     @PostMapping
     // Create a new user and return the userID of the created account
     public String createNewUser(@RequestParam double balance) {
+        if (balance < 0) return "Negative balance not allowed!";
         return userRepository.addUser(BigDecimal.valueOf(balance));
     }
 }
