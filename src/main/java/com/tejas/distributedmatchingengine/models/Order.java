@@ -57,7 +57,6 @@ public class Order {
                 type, quantity, price.toPlainString());
     }
 
-    // Return 1 on a successful cancellation; 0 when order is already filled
     public Status cancel() {
         if (status == Status.NEW) {
             status = Status.CANCELLED;
