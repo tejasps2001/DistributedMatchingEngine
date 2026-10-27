@@ -21,10 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
+// Using package-private access since JUnit 5 can run these tests using reflection
 @ExtendWith(MockitoExtension.class)
-public class OrderControllerUnitTests {
+class OrderControllerUnitTests {
     @Mock
     private MatchingService matchingService;
 
@@ -38,7 +38,7 @@ public class OrderControllerUnitTests {
     @Test
     @DisplayName("Test whether a SELL order is successfully matched and fully" +
             " filled.")
-    public void sellOrderFullPlacementHappyFlow() {
+    void sellOrderFullPlacementHappyFlow() {
         // Assumptions
         // Set up selling user's wallet
         UserWallet sellingWallet = new UserWallet(BigDecimal.valueOf(100.00));
@@ -65,7 +65,7 @@ public class OrderControllerUnitTests {
     @Test
     @DisplayName("Test whether a SELL order is successfully matched and partially" +
             " filled.")
-    public void sellOrderPartialPlacementHappyFlow() {
+    void sellOrderPartialPlacementHappyFlow() {
         // Assumptions
         // Set up selling user's wallet
         UserWallet sellingWallet = new UserWallet(BigDecimal.valueOf(100.00));
@@ -94,7 +94,7 @@ public class OrderControllerUnitTests {
 
     @Test
     @DisplayName("Test whether a SELL order is not matched.")
-    public void sellOrderNoPlacementHappyFlow() {
+    void sellOrderNoPlacementHappyFlow() {
         // Assumptions
         // Set up selling user's wallet
         UserWallet sellingWallet = new UserWallet(BigDecimal.valueOf(100.00));
@@ -122,7 +122,7 @@ public class OrderControllerUnitTests {
     @Test
     @DisplayName("Test whether a SELL order is not matched when the user has " +
             "insufficient amount of shares")
-    public void sellOrderInsufficientShares() {
+    void sellOrderInsufficientShares() {
         // Assumptions
         // Set up selling user's wallet
         UserWallet sellingWallet = new UserWallet(BigDecimal.valueOf(100.00));
@@ -147,7 +147,7 @@ public class OrderControllerUnitTests {
     @Test
     @DisplayName("Test whether an exception is thrown when there is no entry for" +
             "the userID in the UserRespository.")
-    public void sellingUserDoesNotExist() {
+    void sellingUserDoesNotExist() {
         Order sellOrder = new Order("user132",
                 Type.SELL, BigDecimal.valueOf(24.00), 10);
 
@@ -159,7 +159,7 @@ public class OrderControllerUnitTests {
     @Test
     @DisplayName("Test whether a BUY order is successfully matched and fully" +
             " filled.")
-    public void buyOrderFullPlacementHappyFlow() {
+    void buyOrderFullPlacementHappyFlow() {
         // Assumptions
         // Set up buying user's wallet
         UserWallet buyingWallet = new UserWallet(BigDecimal.valueOf(2500.00));
@@ -184,7 +184,7 @@ public class OrderControllerUnitTests {
     @Test
     @DisplayName("Test whether a BUY order is successfully matched and partially" +
             " filled.")
-    public void buyOrderPartialPlacementHappyFlow() {
+    void buyOrderPartialPlacementHappyFlow() {
         // Assumptions
         // Set up buying user's wallet
         UserWallet buyingWallet = new UserWallet(BigDecimal.valueOf(2500.00));
@@ -211,7 +211,7 @@ public class OrderControllerUnitTests {
 
     @Test
     @DisplayName("Test whether a BUY order is not matched.")
-    public void buyOrderNoPlacementHappyFlow() {
+    void buyOrderNoPlacementHappyFlow() {
         // Assumptions
         // Set up buying user's wallet
         UserWallet buyingWallet = new UserWallet(BigDecimal.valueOf(5000.00));
@@ -237,7 +237,7 @@ public class OrderControllerUnitTests {
     @Test
     @DisplayName("Test whether a BUY order is not matched when the user has " +
             "insufficient money.")
-    public void buyOrderInsufficientMoney() {
+    void buyOrderInsufficientMoney() {
         // Assumptions
         // Set up buying user's wallet
         UserWallet buyingWallet = new UserWallet(BigDecimal.valueOf(100.00));
@@ -259,7 +259,7 @@ public class OrderControllerUnitTests {
     @Test
     @DisplayName("Test whether an exception is thrown when there is no entry for" +
             "the userID in the UserRespository.")
-    public void buyingUserDoesNotExist() {
+    void buyingUserDoesNotExist() {
         Order sellOrder = new Order("user132",
                 Type.SELL, BigDecimal.valueOf(24.00), 10);
 
@@ -270,7 +270,7 @@ public class OrderControllerUnitTests {
     // Tests for the cancel controller action
     @Test
     @DisplayName("Test that the order is cancelled.")
-    public void orderCancellationHappyFlow() {
+    void orderCancellationHappyFlow() {
         Order cancelOrder = new Order("user132",
                 Type.SELL, BigDecimal.valueOf(24.00), 10);
 
@@ -284,7 +284,7 @@ public class OrderControllerUnitTests {
     @Test
     @DisplayName("Test that the order is not cancelled when it is already" +
             " filled.")
-    public void orderCancellationDeniedAlreadyFilled() {
+    void orderCancellationDeniedAlreadyFilled() {
         Order cancelOrder = new Order("user132",
                 Type.SELL, BigDecimal.valueOf(24.00), 10);
 
@@ -298,7 +298,7 @@ public class OrderControllerUnitTests {
 
     @Test
     @DisplayName("Test that the portfolio is displayed.")
-    public void getPortfolioHappyFlow() {
+    void getPortfolioHappyFlow() {
         // Assumptions
         // Set up selling user's wallet
         UserWallet sellingWallet = new UserWallet(BigDecimal.valueOf(100.00));
@@ -317,7 +317,7 @@ public class OrderControllerUnitTests {
     @Test
     @DisplayName("Test that an exception is thrown when there is no user with" +
             "the given userID.")
-    public void getPortfolioUserNotFound() {
+    void getPortfolioUserNotFound() {
         given(userRepository.findUserByID("user123"))
                 .willReturn(Optional.empty());
 
@@ -327,7 +327,7 @@ public class OrderControllerUnitTests {
 
     @Test
     @DisplayName("Test that a new user is created.")
-    public void createNewUserHappyFlow() {
+    void createNewUserHappyFlow() {
         orderController.createNewUser(1000.00);
         verify(userRepository)
                 .addUser(BigDecimal.valueOf(1000.00));

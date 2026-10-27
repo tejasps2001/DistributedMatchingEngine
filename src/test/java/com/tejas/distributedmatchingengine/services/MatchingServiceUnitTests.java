@@ -20,8 +20,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+// Using package-private access since JUnit 5 can run these tests using reflection
 @ExtendWith(MockitoExtension.class)
-public class MatchingServiceUnitTests {
+class MatchingServiceUnitTests {
     @Mock
     OrderRepository orderRepository;
 
@@ -38,7 +39,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a BUY order is successfully matched with a SELL" +
             " order.")
-    public void matchBuyHappyFlow() {
+    void matchBuyHappyFlow() {
         Order buyOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
 
@@ -63,7 +64,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a BUY order is successfully and fully filled by" +
             " multiple SELL orders.")
-    public void matchBuyMultipleSellHappyFlow() {
+    void matchBuyMultipleSellHappyFlow() {
         Order buyOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
 
@@ -94,7 +95,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a BUY order is successfully matched and partially" +
             " filled with a SELL order.")
-    public void matchBuyPartialFillHappyFlow() {
+    void matchBuyPartialFillHappyFlow() {
         Order buyOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
 
@@ -119,7 +120,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a BUY order is successfully and partially filled" +
             " by multiple SELL orders.")
-    public void matchBuyMultipleSellPartialHappyFlow() {
+    void matchBuyMultipleSellPartialHappyFlow() {
         Order buyOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
 
@@ -148,7 +149,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a BUY order is added to order book when the SELL" +
             " order queue is empty.")
-    public void matchBuyEmptySell() {
+    void matchBuyEmptySell() {
         Order buyOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
 
@@ -172,7 +173,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a BUY order is added to order book when the SELL" +
             " order queue is empty.")
-    public void matchBuyNoSell() {
+    void matchBuyNoSell() {
         Order buyOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
 
@@ -194,7 +195,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a SELL order is successfully matched with a BUY" +
             " order.")
-    public void matchSellHappyFlow() {
+    void matchSellHappyFlow() {
         Order sellOrder = new Order("user123",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
@@ -219,7 +220,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a SELL order is successfully and fully filled by" +
             " multiple BUY orders.")
-    public void matchSellMultipleBuyHappyFlow() {
+    void matchSellMultipleBuyHappyFlow() {
         Order sellOrder = new Order("user123",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
@@ -250,7 +251,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a SELL order is successfully matched and partially" +
             " filled with a BUY order.")
-    public void matchSellPartialFillHappyFlow() {
+    void matchSellPartialFillHappyFlow() {
         Order sellOrder = new Order("user123",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
@@ -275,7 +276,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a SELL order is successfully and partially filled" +
             " by multiple BUY orders.")
-    public void matchSellMultipleBuyPartialHappyFlow() {
+    void matchSellMultipleBuyPartialHappyFlow() {
         Order sellOrder = new Order("user123",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
@@ -304,7 +305,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a SELL order is added to order book when the BUY" +
             " order queue is empty.")
-    public void matchSellEmptyBuy() {
+    void matchSellEmptyBuy() {
         Order sellOrder = new Order("user123",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
@@ -328,7 +329,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a SELL order is added to order book when the BUY" +
             " order queue is empty.")
-    public void matchSellNoBuy() {
+    void matchSellNoBuy() {
         Order sellOrder = new Order("user123",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
@@ -350,7 +351,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test whether two orders are successfully matched together and" +
             " fully filled when no exception occurs.")
-    public void twoOrdersCompletelyMatched() {
+    void twoOrdersCompletelyMatched() {
         Order restingOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
 
@@ -379,7 +380,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test whether an incoming order is partially filled and a" +
             " resting order is fully filled when no exception occurs.")
-    public void incomingPartiallyFilledRestingFullyFilled() {
+    void incomingPartiallyFilledRestingFullyFilled() {
         Order restingOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 10);
 
@@ -408,7 +409,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test whether an incoming order is fully filled and a" +
             " resting order is partially filled when no exception occurs.")
-    public void incomingFullyFilledRestingPartiallyFilled() {
+    void incomingFullyFilledRestingPartiallyFilled() {
         Order restingOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 30);
 
@@ -436,7 +437,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test whether an incoming order is matched properly with" +
             " multiple resting orders, fully filling all the resting orders.")
-    public void incomingFullyFilledMultipleRestingFullyFilled() {
+    void incomingFullyFilledMultipleRestingFullyFilled() {
         Order restingOrder1 = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 30);
         Order restingOrder2 = new Order("user124",
@@ -484,7 +485,7 @@ public class MatchingServiceUnitTests {
     @DisplayName("Test whether an incoming order is matched properly with" +
             " multiple resting orders, partially filling some of the resting" +
             " orders.")
-    public void incomingFullyFilledMultipleRestingPartiallyFilled() {
+    void incomingFullyFilledMultipleRestingPartiallyFilled() {
         Order restingOrder1 = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 30);
         Order restingOrder2 = new Order("user124",
@@ -537,7 +538,7 @@ public class MatchingServiceUnitTests {
     @DisplayName("Test whether an incoming order is partially filled by" +
             " multiple resting orders, fully filling all of the resting" +
             " orders.")
-    public void incomingPartiallyFilledMultipleRestingFullyFilled() {
+    void incomingPartiallyFilledMultipleRestingFullyFilled() {
         Order restingOrder1 = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 30);
         Order restingOrder2 = new Order("user124",
@@ -583,7 +584,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test that a cancelled order is removed from the queue when" +
             " matchingService encounters it.")
-    public void cancelledOrderIsRemoved() {
+    void cancelledOrderIsRemoved() {
         Order restingOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 10);
 
@@ -607,7 +608,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test whether there is a buyer price improvement" +
             " during an aggressive cross edge.")
-    public void aggressiveBuyCrossEdge() {
+    void aggressiveBuyCrossEdge() {
         Order restingOrder1 = new Order("user1243",
                 Type.SELL, BigDecimal.valueOf(100.00), 10);
         // Add other unsuitable orders too to verify cross-edge is handled
@@ -643,7 +644,7 @@ public class MatchingServiceUnitTests {
     @Test
     @DisplayName("Test whether there is a buyer price improvement\" +\n" +
             "            \" during an aggressive cross edge.")
-    public void aggressiveSellCrossEdge() {
+    void aggressiveSellCrossEdge() {
         Order restingOrder1 = new Order("user1243",
                 Type.BUY, BigDecimal.valueOf(100.00), 10);
         // Add other unsuitable orders too to verify cross-edge is handled
@@ -681,7 +682,7 @@ public class MatchingServiceUnitTests {
             "            \" during an aggressive cross edge covering orders at" +
             " multiple price levels. The matching should stop when the price " +
             "level goes beyond the incoming order's bounds.")
-    public void multiLevelSweepBuyCrossEdgeWithResidualRestingOrder() {
+    void multiLevelSweepBuyCrossEdgeWithResidualRestingOrder() {
         Order restingOrder1 = new Order("user1243",
                 Type.SELL, BigDecimal.valueOf(100.00), 5);
         Order restingOrder2 = new Order("user1253",
@@ -735,7 +736,7 @@ public class MatchingServiceUnitTests {
             "            \" during an aggressive cross edge covering orders at" +
             " multiple price levels. The matching should stop when the price " +
             "level goes beyond the incoming order's bounds.")
-    public void multiLevelSweepSellCrossEdgeWithResidualRestingOrder() {
+    void multiLevelSweepSellCrossEdgeWithResidualRestingOrder() {
         Order restingOrder1 = new Order("user1243",
                 Type.BUY, BigDecimal.valueOf(106.00), 5);
         Order restingOrder2 = new Order("user1253",
@@ -785,7 +786,7 @@ public class MatchingServiceUnitTests {
 
     @Test
     @DisplayName("Test that the self-trade prevention works correctly.")
-    public void selfTradePrevention() {
+    void selfTradePrevention() {
         Order buyOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
 
