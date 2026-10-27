@@ -16,7 +16,6 @@ import java.util.UUID;
  */
 @Getter
 @Setter(AccessLevel.NONE)
-@ToString
 public class UserWallet {
 
     private String userID;
