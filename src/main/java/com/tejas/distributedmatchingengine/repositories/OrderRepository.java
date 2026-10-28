@@ -20,6 +20,13 @@ public class OrderRepository {
         asksBook = new TreeMap<>(Comparator.naturalOrder());
     }
 
+    // Package-private constructor for testing purposes
+    OrderRepository(SortedMap<BigDecimal, Queue<Order>> bidsBook,
+                    SortedMap<BigDecimal, Queue<Order>> asksBook) {
+        this.bidsBook = bidsBook;
+        this.asksBook = asksBook;
+    }
+
     /**
      * Add a resting BUY order to the order book. This should be called if the order
      * couldn't be immediately matched with any existing resting SELL order.
