@@ -94,7 +94,7 @@ class SettlementServiceUnitTests {
 
     @Test
     @DisplayName("Test that a partially filled sell order is correctly settled.")
-    public void settlePartiallyFilledSell() {
+    void settlePartiallyFilledSell() {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(14.00));
         wallet.addToTotalShares(20);
 
@@ -121,7 +121,7 @@ class SettlementServiceUnitTests {
 
     @Test
     @DisplayName("Test that a fully filled sell order is correctly settled.")
-    public void settleFullyFilledSell() {
+    void settleFullyFilledSell() {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(14.00));
         wallet.addToTotalShares(20);
 
@@ -149,7 +149,7 @@ class SettlementServiceUnitTests {
     @Test
     @DisplayName("Test that an aggressive partially filled sell order is" +
             " correctly settled.")
-    public void settleAggressivePartiallyFilledSell() {
+    void settleAggressivePartiallyFilledSell() {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(14.00));
         wallet.addToTotalShares(20);
 
@@ -177,7 +177,7 @@ class SettlementServiceUnitTests {
     @Test
     @DisplayName("Test that an aggressive fully filled sell order is" +
             " correctly settled.")
-    public void settleAggressiveFullyFilledSell() {
+    void settleAggressiveFullyFilledSell() {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(14.00));
         wallet.addToTotalShares(20);
 
@@ -204,7 +204,7 @@ class SettlementServiceUnitTests {
 
     @Test
     @DisplayName("Test that a partially filled buy order is correctly settled.")
-    public void settlePartiallyFilledBuy() {
+    void settlePartiallyFilledBuy() {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(114.00));
 
         Order buyOrder = new Order(wallet.getUserID(),
@@ -224,7 +224,7 @@ class SettlementServiceUnitTests {
 
     @Test
     @DisplayName("Test that a fully filled buy order is correctly settled.")
-    public void settleFullyFilledBuy() {
+    void settleFullyFilledBuy() {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(114.00));
 
         Order buyOrder = new Order(wallet.getUserID(),
@@ -245,7 +245,7 @@ class SettlementServiceUnitTests {
     @Test
     @DisplayName("Test that an aggressive partially filled buy order is" +
             " correctly settled.")
-    public void settleAggressivePartiallyFilledBuy() {
+    void settleAggressivePartiallyFilledBuy() {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(114.00));
 
         Order buyOrder = new Order(wallet.getUserID(),
@@ -271,7 +271,7 @@ class SettlementServiceUnitTests {
     @Test
     @DisplayName("Test that an aggressive fully filled buy order is" +
             " correctly settled.")
-    public void settleAggressiveFullyFilledBuy() {
+    void settleAggressiveFullyFilledBuy() {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(114.00));
 
         Order buyOrder = new Order(wallet.getUserID(),
@@ -296,7 +296,7 @@ class SettlementServiceUnitTests {
 
     @Test
     @DisplayName("Test that a cancelled buy order is correctly settled.")
-    public void settleCancelledBuy() throws InterruptedException {
+    void settleCancelledBuy() throws InterruptedException {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(114.00));
 
 
@@ -317,7 +317,7 @@ class SettlementServiceUnitTests {
 
     @Test
     @DisplayName("Test that a cancelled sell order is correctly settled.")
-    public void settleCancelledSell() throws InterruptedException {
+    void settleCancelledSell() throws InterruptedException {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(114.00));
         wallet.addToTotalShares(10);
 

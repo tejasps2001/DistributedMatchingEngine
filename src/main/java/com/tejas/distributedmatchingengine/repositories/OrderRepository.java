@@ -1,7 +1,6 @@
 package com.tejas.distributedmatchingengine.repositories;
 
 import com.tejas.distributedmatchingengine.models.Order;
-import com.tejas.distributedmatchingengine.models.Status;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Repository;
@@ -17,7 +16,6 @@ public class OrderRepository {
     private final SortedMap<BigDecimal, Queue<Order>> asksBook;
 
     public OrderRepository() {
-        // Bids book sorted in descending order & asks book sorted in ascending order
         bidsBook = new TreeMap<>(Comparator.reverseOrder());
         asksBook = new TreeMap<>(Comparator.naturalOrder());
     }
@@ -52,35 +50,5 @@ public class OrderRepository {
         var newQueue = new ArrayDeque<Order>();
         newQueue.add(newOrder);
         orderBook.put(newOrder.getPrice(), newQueue);
-        // TODO: Don't add it if it is cancelled!
-    }
-
-    // A list is enough. No need of a queue.
-    public void removeBuyOrders(SortedMap<BigDecimal, Queue<Order>> buyOrders) {
-        removeOrders(buyOrders, bidsBook);
-    }
-
-    public void removeSellOrders(SortedMap<BigDecimal, Queue<Order>> sellOrders) {
-        removeOrders(sellOrders, asksBook);
-    }
-
-    public void removeOrders(SortedMap<BigDecimal, Queue<Order>> ordersToBeRemoved,
-                             SortedMap<BigDecimal, Queue<Order>> orderBook) {
-        for(Map.Entry<BigDecimal, Queue<Order>> orderQueueToBeRemoved :
-                ordersToBeRemoved.entrySet()) {
-            var orderQueue = orderBook.get(orderQueueToBeRemoved.getKey());
-            // Don't remove orders from the order book that are only partially
-            // filled.
-            // don't need to worry about orders in the book that are canceled
-            // after matching because ordersToBeRemoved have the exact orders
-            // that were matched
-            var matchedQueue = orderQueueToBeRemoved.getValue();
-            // TODO: removeIf() bulk operation is not guaranteed to be
-            //  performed atomically
-            matchedQueue.removeIf(order ->
-                    order.getStatus() == Status.PARTIALLY_FILLED);
-            orderBook.get(orderQueueToBeRemoved.getKey()).
-                    removeAll(matchedQueue);
-        }
     }
 }
