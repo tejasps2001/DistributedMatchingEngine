@@ -1,6 +1,5 @@
 package com.tejas.distributedmatchingengine.models;
 
-import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

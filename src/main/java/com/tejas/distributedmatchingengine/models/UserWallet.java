@@ -35,6 +35,7 @@ public class UserWallet {
     public UserWallet(BigDecimal balance) {
         this.userID = UUID.randomUUID().toString();
         this.totalBalance = this.availableBalance = balance;
+        this.availableShares = this.totalShares = 0;
     }
 
     // When we have multiple symbol pairs being traded by a single user, one
