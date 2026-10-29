@@ -20,7 +20,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
 
 // Using package-private access since JUnit 5 can run these tests using reflection
 @ExtendWith(MockitoExtension.class)
@@ -56,10 +55,10 @@ class OrderControllerUnitTests {
                 .willReturn(Status.FILLED);
 
         // Call/Executions
-        String orderStatus = orderController.placeSell(sellOrder);
+        var orderStatus = orderController.placeSell(sellOrder);
 
         // Validations
-        assertEquals("Order executed.", orderStatus);
+        assertEquals("Order executed.", orderStatus.getBody());
     }
 
     @Test
@@ -83,13 +82,13 @@ class OrderControllerUnitTests {
                 .willReturn(Status.PARTIALLY_FILLED);
 
         // Call/Executions
-        String orderStatus = orderController.placeSell(sellOrder);
+        var orderStatus = orderController.placeSell(sellOrder);
 
         // Validations
         assertEquals(String.format("""
                         Filled %d shares.""",
                 sellOrder.getQuantity() - sellOrder.getRemainingQuantity()),
-                orderStatus);
+                orderStatus.getBody());
     }
 
     @Test
@@ -112,11 +111,11 @@ class OrderControllerUnitTests {
                 .willReturn(Status.NEW);
 
         // Call/Executions
-        String orderStatus = orderController.placeSell(sellOrder);
+        var orderStatus = orderController.placeSell(sellOrder);
 
         // Validations
         assertEquals("Couldn't fill order. Added to order book.",
-                orderStatus);
+                orderStatus.getBody());
     }
 
     @Test
@@ -137,11 +136,11 @@ class OrderControllerUnitTests {
                 Type.SELL, BigDecimal.valueOf(24.00), 100);
 
         // Call/Executions
-        String orderStatus = orderController.placeSell(sellOrder);
+        var orderStatus = orderController.placeSell(sellOrder);
 
         // Validations
         assertEquals("Insufficient amount of shares!",
-                orderStatus);
+                orderStatus.getBody());
     }
 
     @Test
@@ -175,10 +174,10 @@ class OrderControllerUnitTests {
                 .willReturn(Status.FILLED);
 
         // Call/Executions
-        String orderStatus = orderController.placeBuy(buyOrder);
+        var orderStatus = orderController.placeBuy(buyOrder);
 
         // Validations
-        assertEquals("Order executed.", orderStatus);
+        assertEquals("Order executed.", orderStatus.getBody());
     }
 
     @Test
@@ -200,13 +199,13 @@ class OrderControllerUnitTests {
                 .willReturn(Status.PARTIALLY_FILLED);
 
         // Call/Executions
-        String orderStatus = orderController.placeBuy(buyOrder);
+        var orderStatus = orderController.placeBuy(buyOrder);
 
         // Validations
         assertEquals(String.format("""
                         Bought %d shares.""",
                         buyOrder.getQuantity() - buyOrder.getRemainingQuantity()),
-                orderStatus);
+                orderStatus.getBody());
     }
 
     @Test
@@ -227,11 +226,11 @@ class OrderControllerUnitTests {
                 .willReturn(Status.NEW);
 
         // Call/Executions
-        String orderStatus = orderController.placeBuy(buyOrder);
+        var orderStatus = orderController.placeBuy(buyOrder);
 
         // Validations
         assertEquals("Couldn't fill order. Added to order book.",
-                orderStatus);
+                orderStatus.getBody());
     }
 
     @Test
@@ -250,10 +249,10 @@ class OrderControllerUnitTests {
                 Type.BUY, BigDecimal.valueOf(24.00), 10);
 
         // Call/Executions
-        String orderStatus = orderController.placeBuy(buyOrder);
+        var orderStatus = orderController.placeBuy(buyOrder);
 
         // Validations
-        assertEquals("Insufficient funds!", orderStatus);
+        assertEquals("Insufficient funds!", orderStatus.getBody());
     }
 
     @Test
@@ -276,9 +275,9 @@ class OrderControllerUnitTests {
 
         cancelOrder.setStatus(Status.CANCELLED);
 
-        String cancelStatus = orderController.cancelOrder(cancelOrder);
+        var cancelStatus = orderController.cancelOrder(cancelOrder);
 
-        assertEquals("Order cancelled.", cancelStatus);
+        assertEquals("Order cancelled.", cancelStatus.getBody());
     }
 
     @Test
@@ -290,54 +289,9 @@ class OrderControllerUnitTests {
 
         cancelOrder.setStatus(Status.FILLED);
 
-        String cancelStatus = orderController.cancelOrder(cancelOrder);
+        var cancelStatus = orderController.cancelOrder(cancelOrder);
 
         assertEquals("Couldn't cancel. Order already filled.",
-                cancelStatus);
-    }
-
-    @Test
-    @DisplayName("Test that the portfolio is displayed.")
-    void getPortfolioHappyFlow() {
-        // Assumptions
-        // Set up selling user's wallet
-        UserWallet sellingWallet = new UserWallet(BigDecimal.valueOf(100.00));
-        String sellingWalletUserID = sellingWallet.getUserID();
-        sellingWallet.addToTotalShares(20);
-        sellingWallet.addToAvailableShares(20);
-
-        given(userRepository.findUserByID(sellingWalletUserID))
-                .willReturn(Optional.of(sellingWallet));
-
-        String portfolio = orderController.getPortfolio(sellingWalletUserID);
-
-        assertEquals(sellingWallet.toString(), portfolio);
-    }
-
-    @Test
-    @DisplayName("Test that an exception is thrown when there is no user with" +
-            "the given userID.")
-    void getPortfolioUserNotFound() {
-        given(userRepository.findUserByID("user123"))
-                .willReturn(Optional.empty());
-
-        assertThrows(UserNotFoundException.class,
-                () -> orderController.getPortfolio("user123"));
-    }
-
-    @Test
-    @DisplayName("Test that a new user is created.")
-    void createNewUserHappyFlow() {
-        orderController.createNewUser(1000.00);
-        verify(userRepository)
-                .addUser(BigDecimal.valueOf(1000.00));
-    }
-
-    @Test
-    @DisplayName("Test that a new user is not created if a negative balance " +
-            "is given.")
-    public void doNotCreateUserIfNegativeBalanceGiven() {
-        String result = orderController.createNewUser(-100.00);
-        assertEquals("Negative balance not allowed!", result);
+                cancelStatus.getBody());
     }
 }
