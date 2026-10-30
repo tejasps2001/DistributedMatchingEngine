@@ -616,7 +616,8 @@ class MatchingServiceUnitTests {
         assertEquals(Status.FILLED, incomingOrder.getStatus());
         assertEquals(0, restingOrder1.getRemainingQuantity());
         // Verification of cross-edge by checking the resting order's price
-        assertEquals(BigDecimal.valueOf(100.00), restingOrder1.getPrice());
+        assertEquals(0,
+                new BigDecimal("100.00").compareTo(restingOrder1.getPrice()));
         assertEquals(Status.FILLED, restingOrder1.getStatus());
         verify(settlementService).settle(restingOrder1, incomingOrder, 10);
     }
@@ -650,7 +651,8 @@ class MatchingServiceUnitTests {
         assertEquals(Status.FILLED, incomingOrder.getStatus());
         assertEquals(0, restingOrder1.getRemainingQuantity());
         // Verification of cross-edge by checking the resting order's price
-        assertEquals(BigDecimal.valueOf(100.00), restingOrder1.getPrice());
+        assertEquals(0,
+                new BigDecimal("100.00").compareTo(restingOrder1.getPrice()));
         assertEquals(Status.FILLED, restingOrder1.getStatus());
         verify(settlementService).settle(restingOrder1, incomingOrder, 10);
     }

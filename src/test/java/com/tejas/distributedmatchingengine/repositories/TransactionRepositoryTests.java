@@ -4,6 +4,7 @@ import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Transaction;
 import com.tejas.distributedmatchingengine.models.Type;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -14,7 +15,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class TransactionRepositoryTest {
+class TransactionRepositoryTests {
     private ConcurrentNavigableMap<Long, Transaction> transactions;
     private TransactionRepository transactionRepository;
 
@@ -25,6 +26,7 @@ class TransactionRepositoryTest {
     }
 
     @Test
+    @DisplayName("Test that a transaction is added to the ledger.")
     void addTransaction() {
         Order sellOrder = new Order("user123",
                 Type.SELL, BigDecimal.valueOf(12.00), 20);

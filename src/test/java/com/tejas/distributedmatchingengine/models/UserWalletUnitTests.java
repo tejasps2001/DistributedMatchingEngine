@@ -27,8 +27,8 @@ public class UserWalletUnitTests {
         boolean result = userWallet.tryDeductFromAvailableBalance(
                 BigDecimal.valueOf(50.00));
         assertTrue(result);
-        assertEquals(BigDecimal.valueOf(50.00),
-                userWallet.getAvailableBalance());
+        assertEquals(0, BigDecimal.valueOf(50.00).compareTo(
+                userWallet.getAvailableBalance()));
     }
 
     @Test
@@ -38,8 +38,8 @@ public class UserWalletUnitTests {
         boolean result = userWallet.tryDeductFromAvailableBalance(
                 BigDecimal.valueOf(150.00));
         assertFalse(result);
-        assertEquals(BigDecimal.valueOf(100.00),
-                userWallet.getAvailableBalance());
+        assertEquals(0, BigDecimal.valueOf(100.00).compareTo(
+                userWallet.getAvailableBalance()));
     }
 
     @Test
@@ -49,8 +49,8 @@ public class UserWalletUnitTests {
         boolean result = userWallet.tryDeductFromTotalBalance(
                 BigDecimal.valueOf(50.00));
         assertTrue(result);
-        assertEquals(BigDecimal.valueOf(50.00),
-                userWallet.getTotalBalance());
+        assertEquals(0, BigDecimal.valueOf(50.00).compareTo(
+                userWallet.getTotalBalance()));
     }
 
     @Test
@@ -60,8 +60,8 @@ public class UserWalletUnitTests {
         boolean result = userWallet.tryDeductFromTotalBalance(
                 BigDecimal.valueOf(150.00));
         assertFalse(result);
-        assertEquals(BigDecimal.valueOf(100.00),
-                userWallet.getTotalBalance());
+        assertEquals(0, BigDecimal.valueOf(100.00).compareTo(
+                userWallet.getTotalBalance()));
     }
 
     @Test

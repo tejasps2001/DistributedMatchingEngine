@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -115,8 +114,8 @@ class SettlementServiceUnitTests {
                 BigDecimal.valueOf(11.00), 10);
 
         assertEquals(10, wallet.getTotalShares());
-        assertEquals(BigDecimal.valueOf(124.00), wallet.getAvailableBalance());
-        assertEquals(BigDecimal.valueOf(124.00), wallet.getTotalBalance());
+        assertEquals(0, BigDecimal.valueOf(124.00).compareTo(wallet.getAvailableBalance()));
+        assertEquals(0, BigDecimal.valueOf(124.00).compareTo(wallet.getTotalBalance()));
     }
 
     @Test
@@ -142,8 +141,8 @@ class SettlementServiceUnitTests {
                 BigDecimal.valueOf(11.00), 20);
 
         assertEquals(0, wallet.getTotalShares());
-        assertEquals(BigDecimal.valueOf(234.00), wallet.getAvailableBalance());
-        assertEquals(BigDecimal.valueOf(234.00), wallet.getTotalBalance());
+        assertEquals(0, BigDecimal.valueOf(234.00).compareTo(wallet.getAvailableBalance()));
+        assertEquals(0, BigDecimal.valueOf(234.00).compareTo(wallet.getTotalBalance()));
     }
 
     @Test
@@ -170,8 +169,8 @@ class SettlementServiceUnitTests {
                 BigDecimal.valueOf(15.00), 10);
 
         assertEquals(10, wallet.getTotalShares());
-        assertEquals(BigDecimal.valueOf(164.00), wallet.getAvailableBalance());
-        assertEquals(BigDecimal.valueOf(164.00), wallet.getTotalBalance());
+        assertEquals(0, BigDecimal.valueOf(164.00).compareTo(wallet.getAvailableBalance()));
+        assertEquals(0, BigDecimal.valueOf(164.00).compareTo(wallet.getTotalBalance()));
     }
 
     @Test
@@ -198,8 +197,8 @@ class SettlementServiceUnitTests {
                 BigDecimal.valueOf(15.00), 20);
 
         assertEquals(0, wallet.getTotalShares());
-        assertEquals(BigDecimal.valueOf(314.00), wallet.getAvailableBalance());
-        assertEquals(BigDecimal.valueOf(314.00), wallet.getTotalBalance());
+        assertEquals(0, BigDecimal.valueOf(314.00).compareTo(wallet.getAvailableBalance()));
+        assertEquals(0, BigDecimal.valueOf(314.00).compareTo(wallet.getTotalBalance()));
     }
 
     @Test
@@ -219,7 +218,7 @@ class SettlementServiceUnitTests {
 
         assertEquals(5, wallet.getAvailableShares());
         assertEquals(5, wallet.getTotalShares());
-        assertEquals(BigDecimal.valueOf(59.00), wallet.getTotalBalance());
+        assertEquals(0, BigDecimal.valueOf(59.00).compareTo(wallet.getTotalBalance()));
     }
 
     @Test
@@ -239,7 +238,7 @@ class SettlementServiceUnitTests {
 
         assertEquals(10, wallet.getAvailableShares());
         assertEquals(10, wallet.getTotalShares());
-        assertEquals(BigDecimal.valueOf(4.00), wallet.getTotalBalance());
+        assertEquals(0, BigDecimal.valueOf(4.00).compareTo(wallet.getTotalBalance()));
     }
 
     @Test
@@ -264,8 +263,8 @@ class SettlementServiceUnitTests {
 
         assertEquals(5, wallet.getAvailableShares());
         assertEquals(5, wallet.getTotalShares());
-        assertEquals(BigDecimal.valueOf(74.00), wallet.getTotalBalance());
-        assertEquals(BigDecimal.valueOf(19.00), wallet.getAvailableBalance());
+        assertEquals(0, BigDecimal.valueOf(74.00).compareTo(wallet.getTotalBalance()));
+        assertEquals(0, BigDecimal.valueOf(19.00).compareTo(wallet.getAvailableBalance()));
     }
 
     @Test
@@ -290,8 +289,8 @@ class SettlementServiceUnitTests {
 
         assertEquals(10, wallet.getAvailableShares());
         assertEquals(10, wallet.getTotalShares());
-        assertEquals(BigDecimal.valueOf(34.00), wallet.getTotalBalance());
-        assertEquals(BigDecimal.valueOf(34.00), wallet.getAvailableBalance());
+        assertEquals(0, BigDecimal.valueOf(34.00).compareTo(wallet.getTotalBalance()));
+        assertEquals(0, BigDecimal.valueOf(34.00).compareTo(wallet.getAvailableBalance()));
     }
 
     @Test
@@ -312,7 +311,7 @@ class SettlementServiceUnitTests {
         settlementService.settleCancellation(buyOrder);
 
         Thread.sleep(1000);
-        assertEquals(BigDecimal.valueOf(114.00), wallet.getAvailableBalance());
+        assertEquals(0, BigDecimal.valueOf(114.00).compareTo(wallet.getAvailableBalance()));
     }
 
     @Test
