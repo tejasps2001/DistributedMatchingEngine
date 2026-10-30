@@ -8,13 +8,15 @@ import org.springframework.stereotype.Service;
 import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 @Service
@@ -26,7 +28,15 @@ public class MatchingService {
     private final SettlementService settlementService;
     private final static Logger logger =
             Logger.getLogger(MatchingService.class.getName());
-    private static final Executor transactionRecorder = Executors.newFixedThreadPool(8);
+    // Mark the sequence of transactions occurring by an ID in the matching
+    // thread itself using a static variable.
+    // Reason: Matching thread A may execute an order later than matching
+    // thread B. But matching thread A may acquire the lock first.
+    // Noting the transactionID in the matching thread itself allows for
+    // proper sequence of transactions.
+    private static final AtomicLong nextTransactionID = new AtomicLong(1);
+    private static final ExecutorService transactionRecorder =
+            Executors.newSingleThreadExecutor();
 
     static {
         buyQueue = new ConcurrentLinkedQueue<>();
@@ -132,11 +142,21 @@ public class MatchingService {
                     newOrder.setStatus(Status.FILLED);
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
+                    // Use effectively final variables to store the serial number
+                    // and the execution time and pass it on to the transaction
+                    // ledger event loop
+                    long transactionID1 = nextTransactionID.getAndIncrement();
+                    Instant executionTime1 = Instant.now();
                     settlementService.settle(order, newOrder, qtyFulfilled);
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
-                                    order, newOrder, qtyFulfilled)
-                            );
+                                    transactionID1,
+                                    executionTime1,
+                                    order.getOrderId(),
+                                    newOrder.getOrderId(),
+                                    order.getPrice(),
+                                    qtyFulfilled)
+                    );
                     orderQueue.poll();
                     return;
                 } else if (qtyLeft > 0) {
@@ -144,22 +164,42 @@ public class MatchingService {
                     newOrder.setStatus(Status.PARTIALLY_FILLED);
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
+                    // Use effectively final variables to store the serial number
+                    // and the execution time and pass it on to the transaction
+                    // ledger event loop
+                    long transactionID2 = nextTransactionID.getAndIncrement();
+                    Instant executionTime2 = Instant.now();
                     settlementService.settle(order, newOrder, qtyFulfilled);
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
-                                    order, newOrder, qtyFulfilled)
-                            );
+                                    transactionID2,
+                                    executionTime2,
+                                    order.getOrderId(),
+                                    newOrder.getOrderId(),
+                                    order.getPrice(),
+                                    qtyFulfilled)
+                    );
                     orderQueue.poll();
                 } else {
                     newOrder.setRemainingQuantity(0);
                     newOrder.setStatus(Status.FILLED);
                     order.setRemainingQuantity(-1 * qtyLeft);
                     order.setStatus(Status.PARTIALLY_FILLED);
+                    // Use effectively final variables to store the serial number
+                    // and the execution time and pass it on to the transaction
+                    // ledger event loop
+                    long transactionID3 = nextTransactionID.getAndIncrement();
+                    Instant executionTime3 = Instant.now();
                     settlementService.settle(order, newOrder, qtyFulfilled);
                     transactionRecorder.execute(() ->
                             transactionRepository.addTransaction(
-                                    order, newOrder, qtyFulfilled)
-                            );
+                                    transactionID3,
+                                    executionTime3,
+                                    order.getOrderId(),
+                                    newOrder.getOrderId(),
+                                    order.getPrice(),
+                                    qtyFulfilled)
+                    );
                     return;
                 }
             }

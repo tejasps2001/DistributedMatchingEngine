@@ -4,7 +4,6 @@ import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.repositories.OrderRepository;
-import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,9 +24,6 @@ import static org.mockito.Mockito.verify;
 class MatchingServiceUnitTests {
     @Mock
     OrderRepository orderRepository;
-
-    @Mock
-    TransactionRepository transactionRepository;
 
     @Mock
     SettlementService settlementService;
@@ -372,8 +368,6 @@ class MatchingServiceUnitTests {
         assertEquals(0, restingOrder.getRemainingQuantity());
         assertEquals(Status.FILLED, restingOrder.getStatus());
         verify(settlementService).settle(restingOrder, incomingOrder, 20);
-        verify(transactionRepository).addTransaction(
-                        restingOrder, incomingOrder, 20);
         assertFalse(buyOrderQueue.contains(restingOrder));
     }
 
@@ -401,8 +395,6 @@ class MatchingServiceUnitTests {
         assertEquals(0, restingOrder.getRemainingQuantity());
         assertEquals(Status.FILLED, restingOrder.getStatus());
         verify(settlementService).settle(restingOrder, incomingOrder, 10);
-        verify(transactionRepository).addTransaction(
-                restingOrder, incomingOrder, 10);
         assertFalse(buyOrderQueue.contains(restingOrder));
     }
 
@@ -430,8 +422,6 @@ class MatchingServiceUnitTests {
         assertEquals(10, restingOrder.getRemainingQuantity());
         assertEquals(Status.PARTIALLY_FILLED, restingOrder.getStatus());
         verify(settlementService).settle(restingOrder, incomingOrder, 20);
-        verify(transactionRepository).addTransaction(
-                restingOrder, incomingOrder, 20);
     }
 
     @Test
@@ -476,8 +466,6 @@ class MatchingServiceUnitTests {
             assertEquals(Status.FILLED, restingOrders[i].getStatus());
             verify(settlementService).settle(restingOrders[i],
                     incomingOrder, qtyFulfilled[i]);
-            verify(transactionRepository).addTransaction(
-                    restingOrders[i], incomingOrder, qtyFulfilled[i]);
         }
     }
 
@@ -523,15 +511,11 @@ class MatchingServiceUnitTests {
             assertEquals(Status.FILLED, restingOrders[i].getStatus());
             verify(settlementService).settle(restingOrders[i],
                     incomingOrder, qtyFulfilled[i]);
-            verify(transactionRepository).addTransaction(
-                    restingOrders[i], incomingOrder, qtyFulfilled[i]);
         }
         assertEquals(10, restingOrder4.getRemainingQuantity());
         assertEquals(Status.PARTIALLY_FILLED, restingOrder4.getStatus());
         verify(settlementService).settle(restingOrder4,
                 incomingOrder, 20);
-        verify(transactionRepository).addTransaction(
-                restingOrder4, incomingOrder, 20);
     }
 
     @Test
@@ -576,8 +560,6 @@ class MatchingServiceUnitTests {
             assertEquals(Status.FILLED, restingOrders[i].getStatus());
             verify(settlementService).settle(restingOrders[i],
                     incomingOrder, qtyFulfilled[i]);
-            verify(transactionRepository).addTransaction(
-                    restingOrders[i], incomingOrder, qtyFulfilled[i]);
         }
     }
 
@@ -637,8 +619,6 @@ class MatchingServiceUnitTests {
         assertEquals(BigDecimal.valueOf(100.00), restingOrder1.getPrice());
         assertEquals(Status.FILLED, restingOrder1.getStatus());
         verify(settlementService).settle(restingOrder1, incomingOrder, 10);
-        verify(transactionRepository).addTransaction(
-                restingOrder1, incomingOrder, 10);
     }
 
     @Test
@@ -673,8 +653,6 @@ class MatchingServiceUnitTests {
         assertEquals(BigDecimal.valueOf(100.00), restingOrder1.getPrice());
         assertEquals(Status.FILLED, restingOrder1.getStatus());
         verify(settlementService).settle(restingOrder1, incomingOrder, 10);
-        verify(transactionRepository).addTransaction(
-                restingOrder1, incomingOrder, 10);
     }
 
     @Test
@@ -723,12 +701,6 @@ class MatchingServiceUnitTests {
         verify(settlementService).settle(restingOrder2, incomingOrder, 5);
         verify(settlementService, never()).settle(
                 unsuitableRestingOrder3, incomingOrder, 2);
-        verify(transactionRepository).addTransaction(
-                restingOrder1, incomingOrder, 5);
-        verify(transactionRepository).addTransaction(
-                restingOrder2, incomingOrder, 5);
-        verify(transactionRepository, never()).addTransaction(
-                unsuitableRestingOrder3, incomingOrder, 2);
     }
 
     @Test
@@ -775,12 +747,6 @@ class MatchingServiceUnitTests {
         verify(settlementService).settle(restingOrder1, incomingOrder, 5);
         verify(settlementService).settle(restingOrder2, incomingOrder, 5);
         verify(settlementService, never()).settle(
-                unsuitableRestingOrder3, incomingOrder, 2);
-        verify(transactionRepository).addTransaction(
-                restingOrder1, incomingOrder, 5);
-        verify(transactionRepository).addTransaction(
-                restingOrder2, incomingOrder, 5);
-        verify(transactionRepository, never()).addTransaction(
                 unsuitableRestingOrder3, incomingOrder, 2);
     }
 

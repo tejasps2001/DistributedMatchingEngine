@@ -8,14 +8,14 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TransactionRepositoryTest {
-    private ConcurrentMap<Instant, Transaction> transactions;
+    private ConcurrentNavigableMap<Long, Transaction> transactions;
     private TransactionRepository transactionRepository;
 
     @BeforeEach
@@ -34,8 +34,12 @@ class TransactionRepositoryTest {
 
         assertTrue(transactions.isEmpty());
 
-        transactionRepository.addTransaction(sellOrder,
-                buyOrder, 20);
+        transactionRepository.addTransaction(1L,
+                Instant.now(),
+                sellOrder.getOrderId(),
+                buyOrder.getOrderId(),
+                BigDecimal.valueOf(20),
+                20);
 
         assertFalse(transactions.isEmpty());
     }
