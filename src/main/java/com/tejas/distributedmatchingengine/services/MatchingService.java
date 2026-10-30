@@ -9,10 +9,7 @@ import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.SortedMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -94,8 +91,10 @@ public class MatchingService {
     public void matchOrders(Order newOrder,
                             SortedMap<BigDecimal,
                                     Queue<Order>> suitableOrdersMap) {
-        for (Map.Entry<BigDecimal, Queue<Order>> suitableOrders :
-                suitableOrdersMap.entrySet()) {
+        Iterator<Map.Entry<BigDecimal, Queue<Order>>> suitableOrdersIterator =
+                suitableOrdersMap.entrySet().iterator();
+        while(suitableOrdersIterator.hasNext()) {
+            var suitableOrders = suitableOrdersIterator.next();
             // If the order in the order book goes beyond the order's
             // bound then we stop matching & add the partially filled order to
             // the order book
@@ -114,6 +113,7 @@ public class MatchingService {
             if(orderQueue.isEmpty()) {
                 logger.info(String.format("No %s to match to!",
                         newOrder.getType() == Type.BUY ? Type.SELL : Type.BUY));
+                suitableOrdersIterator.remove();
                 continue;
             }
             for (Order order : orderQueue) {
@@ -158,6 +158,9 @@ public class MatchingService {
                                     qtyFulfilled)
                     );
                     orderQueue.poll();
+                    // DO NOT REMOVE the orderQueue if it is empty here. Since it
+                    // is iterated over using an enhanced for-loop, removing it
+                    // can cause undefined behavior.
                     return;
                 } else if (qtyLeft > 0) {
                     newOrder.setRemainingQuantity(qtyLeft);
@@ -180,6 +183,9 @@ public class MatchingService {
                                     qtyFulfilled)
                     );
                     orderQueue.poll();
+                    // DO NOT REMOVE the orderQueue if it is empty here. Since it
+                    // is iterated over using an enhanced for-loop, removing it
+                    // can cause undefined behavior.
                 } else {
                     newOrder.setRemainingQuantity(0);
                     newOrder.setStatus(Status.FILLED);
