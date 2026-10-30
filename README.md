@@ -23,7 +23,7 @@ A high-throughput, deterministic Limit Order Book (LOB) and matching engine buil
 
 ---
 
-## Architectural Design & Core Principles
+## Architectural Design
 
 ```text
   [ Incoming Order Request ]
