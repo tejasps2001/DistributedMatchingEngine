@@ -27,6 +27,15 @@ public class OrderRepository {
         this.asksBook = asksBook;
     }
 
+    // Much more complex than below. Need to go thru each key's queue and
+    // find the order. Maybe another, more frequently used method would be to find
+    // the order after filtering through the provided userID's wallet
+//    public Optional<Order> findOrderByID(String orderID) {
+//        Order order = bidsBook.get(orderID);
+//        if (order == null) order = asksBook.
+//        return Optional.ofNullable(orders);
+//    }
+
     /**
      * Add a resting BUY order to the order book. This should be called if the order
      * couldn't be immediately matched with any existing resting SELL order.

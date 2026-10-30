@@ -6,17 +6,15 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Getter
 @Setter
 @EqualsAndHashCode
 public class Order {
-    private static long nextId = 1L;
-    private static Executor orderSettler = Executors.newFixedThreadPool(8);
-    private static Logger logger = Logger.getLogger(Order.class.getName());
+    // Use an atomic variable so that the incoming sequence is preserved
+    // correctly by the orderID
+    private static final AtomicLong nextId = new AtomicLong(1);
 
     private long orderId;
     private String userId;
@@ -31,8 +29,7 @@ public class Order {
                  Type type,
                  BigDecimal price,
                  int quantity) {
-        this.orderId = nextId;
-        nextId++;
+        this.orderId = nextId.getAndIncrement();
         this.userId = userId;
         this.type = type;
         this.price = price;
