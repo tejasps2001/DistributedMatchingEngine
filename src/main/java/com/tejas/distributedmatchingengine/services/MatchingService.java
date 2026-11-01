@@ -51,7 +51,7 @@ public class MatchingService {
     // ONLY ONE THREAD EXECUTES THIS. The core matching logic should be
     // executed (both buy and sell) only by a single thread. (i.e., no
     // concurrent matching) because the shared order books are updated.
-    // Therefore, not synchronizing.
+    // But orderController passes orders concurrently. Hence, synchronizing
     public synchronized Status matchBuy(Order newOrder) {
         var asksBook = orderRepository.getAsksBook();
         // No orders to match to; add to order book
@@ -70,6 +70,10 @@ public class MatchingService {
         return newOrder.getStatus();
     }
 
+    // ONLY ONE THREAD EXECUTES THIS. The core matching logic should be
+    // executed (both buy and sell) only by a single thread. (i.e., no
+    // concurrent matching) because the shared order books are updated.
+    // But orderController passes orders concurrently. Hence, synchronizing
     public synchronized Status matchSell(Order newOrder) {
         var bidsBook = orderRepository.getBidsBook();
         // No orders to match to; add to order book
@@ -135,8 +139,10 @@ public class MatchingService {
                 logger.info(String.format("""
                             \n%s is suitable for the incoming %s.
                         """, order.toCompactString(), newOrder.toCompactString()));
-                var qtyFulfilled = Math.min(newOrder.getRemainingQuantity(), order.getRemainingQuantity());
-                var qtyLeft = newOrder.getRemainingQuantity() - order.getRemainingQuantity();
+                var qtyFulfilled = Math.min(newOrder.getRemainingQuantity(),
+                        order.getRemainingQuantity());
+                var qtyLeft = newOrder.getRemainingQuantity() -
+                        order.getRemainingQuantity();
                 if (qtyLeft == 0) {
                     newOrder.setRemainingQuantity(0);
                     newOrder.setStatus(Status.FILLED);
