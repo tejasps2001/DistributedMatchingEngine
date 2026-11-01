@@ -5,10 +5,11 @@ import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.models.UserWallet;
 import com.tejas.distributedmatchingengine.repositories.UserRepository;
+import lombok.Getter;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
@@ -18,7 +19,8 @@ public class SettlementService {
 
     private final static Logger logger =
             Logger.getLogger(SettlementService.class.getName());
-    private final Executor settlementHandler = Executors.newFixedThreadPool(
+    @Getter
+    private final ExecutorService settlementHandler = Executors.newFixedThreadPool(
             8);
 
     public SettlementService(UserRepository userRepository) {
