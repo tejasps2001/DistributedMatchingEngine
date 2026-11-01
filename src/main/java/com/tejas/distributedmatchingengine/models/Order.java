@@ -32,10 +32,20 @@ public class Order {
         this.orderId = nextId.getAndIncrement();
         this.userId = userId;
         this.type = type;
-        this.price = price;
-        this.quantity = this.remainingQuantity = quantity;
         this.timestamp = Instant.now();
         this.status = Status.NEW;
+
+        if (price.compareTo(BigDecimal.ZERO) <= 0)
+            throw new IllegalArgumentException("Price must be a non-zero " +
+                    "positive value.");
+        else
+            this.price = price;
+
+        if (quantity <= 0)
+            throw new IllegalArgumentException("Quantity must be a non-zero " +
+                    "positive integer.");
+        else
+            this.quantity = this.remainingQuantity = quantity;
     }
 
     public String toString() {
@@ -57,10 +67,9 @@ public class Order {
         if (status == Status.NEW) {
             status = Status.CANCELLED;
         }
-        // Have a redundant else if statement even for the below case because
-        // modifying/cancelling partially filled orders will be implemented
-        // in future milestones.
-        else if (status == Status.FILLED) {
+
+        // TODO: modifying/cancelling partially filled orders.
+        else if (status == Status.PARTIALLY_FILLED) {
             return status;
         }
         return status;

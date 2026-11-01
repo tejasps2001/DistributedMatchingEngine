@@ -36,7 +36,7 @@ public class OrderController {
         // Check if the user contains the required amount of shares
         if (wallet.tryDeductFromAvailableShares(newSellOrder.getQuantity())) {
             wallet.addOrderToWallet(newSellOrder);
-// The limit on the number of async tomcat threads will time out
+            // The limit on the number of async tomcat threads will time out
             // requests during high load. Need to add the requests' orders to a
             // queue and release the thread. CompletableFuture is better than a
             // synchronized?

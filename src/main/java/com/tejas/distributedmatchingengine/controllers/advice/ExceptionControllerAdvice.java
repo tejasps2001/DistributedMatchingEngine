@@ -3,12 +3,14 @@ package com.tejas.distributedmatchingengine.controllers.advice;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.tejas.distributedmatchingengine.exceptions.UserNotFoundException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.exc.ValueInstantiationException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -55,6 +57,9 @@ public class ExceptionControllerAdvice {
                     "field", fieldName,
                     "rejectedValue", invalidFormatE.getValue()
             ));
+        } else if (e.getCause() instanceof ValueInstantiationException) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         }
         // For the cases where format is valid but the user input isn't
         // readable for some other reason
