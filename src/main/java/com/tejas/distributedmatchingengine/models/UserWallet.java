@@ -3,9 +3,11 @@ package com.tejas.distributedmatchingengine.models;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 /*
@@ -19,6 +21,7 @@ import java.util.UUID;
 public class UserWallet {
 
     private String userID;
+    private List<Order> orderList;
 
     // Balance available for new BUYs
     private BigDecimal availableBalance;
@@ -36,6 +39,11 @@ public class UserWallet {
         this.userID = UUID.randomUUID().toString();
         this.totalBalance = this.availableBalance = balance;
         this.availableShares = this.totalShares = 0;
+        orderList = Collections.synchronizedList(new ArrayList<>());
+    }
+
+    public void addOrderToWallet(Order order) {
+        orderList.add(order);
     }
 
     // When we have multiple symbol pairs being traded by a single user, one
@@ -138,6 +146,7 @@ public class UserWallet {
         }
     }
 
+    @Override
     public String toString() {
         return String.format("""
                         Total balance: %s

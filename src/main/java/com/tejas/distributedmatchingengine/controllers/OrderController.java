@@ -35,7 +35,8 @@ public class OrderController {
                         " userID:" + newSellOrder.getUserId()));
         // Check if the user contains the required amount of shares
         if (wallet.tryDeductFromAvailableShares(newSellOrder.getQuantity())) {
-            // The limit on the number of async tomcat threads will time out
+            wallet.addOrderToWallet(newSellOrder);
+// The limit on the number of async tomcat threads will time out
             // requests during high load. Need to add the requests' orders to a
             // queue and release the thread. CompletableFuture is better than a
             // synchronized?
@@ -83,6 +84,7 @@ public class OrderController {
         if (wallet.tryDeductFromAvailableBalance(newBuyOrder.getPrice().multiply(
                 BigDecimal.valueOf(newBuyOrder.getQuantity())
         ))) {
+            wallet.addOrderToWallet(newBuyOrder);
             // The limit on the number of async tomcat threads will time out
             // requests during high load. Need to add the requests' orders to a
             // queue and release the thread. CompletableFuture is better than a
