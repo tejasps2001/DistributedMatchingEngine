@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserWalletUnitTests {
+class UserWalletUnitTests {
     private UserWallet userWallet;
 
     @BeforeEach
@@ -19,11 +19,20 @@ public class UserWalletUnitTests {
         userWallet.addToAvailableShares(100);
         userWallet.addToTotalShares(100);
     }
+    
+    @Test
+    @DisplayName("Test whether orders are added to the wallet.")
+    void addOrdersToList() {
+        Order incomingOrder = new Order("user134",
+                Type.SELL, BigDecimal.valueOf(95.00), 10);
+        userWallet.addOrderToWallet(incomingOrder);
+        assertTrue(userWallet.getOrderList().contains(incomingOrder));
+    }
 
     @Test
     @DisplayName("Test whether trying to debit an amount smaller than the" +
             " available balance returns true.")
-    public void tryDeductFromAvailableBalanceTrue() {
+    void tryDeductFromAvailableBalanceTrue() {
         boolean result = userWallet.tryDeductFromAvailableBalance(
                 BigDecimal.valueOf(50.00));
         assertTrue(result);
@@ -34,7 +43,7 @@ public class UserWalletUnitTests {
     @Test
     @DisplayName("Test whether trying to debit an amount larger than the" +
             " available balance returns false.")
-    public void tryDeductFromAvailableBalanceFalse() {
+    void tryDeductFromAvailableBalanceFalse() {
         boolean result = userWallet.tryDeductFromAvailableBalance(
                 BigDecimal.valueOf(150.00));
         assertFalse(result);
@@ -45,7 +54,7 @@ public class UserWalletUnitTests {
     @Test
     @DisplayName("Test whether trying to debit an amount smaller than the" +
             " total balance returns true.")
-    public void tryDeductFromTotalBalanceTrue() {
+    void tryDeductFromTotalBalanceTrue() {
         boolean result = userWallet.tryDeductFromTotalBalance(
                 BigDecimal.valueOf(50.00));
         assertTrue(result);
@@ -56,7 +65,7 @@ public class UserWalletUnitTests {
     @Test
     @DisplayName("Test whether trying to debit an amount larger than the" +
             " available balance returns false.")
-    public void tryDeductFromTotalBalanceFalse() {
+    void tryDeductFromTotalBalanceFalse() {
         boolean result = userWallet.tryDeductFromTotalBalance(
                 BigDecimal.valueOf(150.00));
         assertFalse(result);
@@ -67,7 +76,7 @@ public class UserWalletUnitTests {
     @Test
     @DisplayName("Test whether trying to deduct no. of shares smaller than the" +
             " available shares returns true.")
-    public void tryDeductFromAvailableSharesTrue() {
+    void tryDeductFromAvailableSharesTrue() {
         boolean result = userWallet.tryDeductFromAvailableShares(50);
         assertTrue(result);
         assertEquals(50, userWallet.getAvailableShares());
@@ -76,7 +85,7 @@ public class UserWalletUnitTests {
     @Test
     @DisplayName("Test whether trying to debit an amount larger than the" +
             " available balance returns false.")
-    public void tryDeductFromAvailableSharesFalse() {
+    void tryDeductFromAvailableSharesFalse() {
         boolean result = userWallet.tryDeductFromAvailableShares(150);
         assertFalse(result);
         assertEquals(100, userWallet.getAvailableShares());
@@ -85,7 +94,7 @@ public class UserWalletUnitTests {
     @Test
     @DisplayName("Test whether trying to deduct no. of shares smaller than the" +
             " available shares returns true.")
-    public void tryDeductFromTotalSharesTrue() {
+    void tryDeductFromTotalSharesTrue() {
         boolean result = userWallet.tryDeductFromTotalShares(50);
         assertTrue(result);
         assertEquals(50, userWallet.getTotalShares());
@@ -94,7 +103,7 @@ public class UserWalletUnitTests {
     @Test
     @DisplayName("Test whether trying to debit an amount larger than the" +
             " available balance returns false.")
-    public void tryDeductFromTotalSharesFalse() {
+    void tryDeductFromTotalSharesFalse() {
         boolean result = userWallet.tryDeductFromTotalShares(150);
         assertFalse(result);
         assertEquals(100, userWallet.getTotalShares());
