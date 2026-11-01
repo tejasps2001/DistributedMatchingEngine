@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
@@ -35,7 +36,8 @@ class SettlementServiceUnitTests {
         // the method calls inside the settle() cannot be stubbed (since they are
         // part of the real object). The only option left is to spy.
         SettlementService spiedSettlementService =
-                spy(new SettlementService(userRepository));
+                spy(new SettlementService(userRepository,
+                        Executors.newFixedThreadPool(8)));
 
         Order restingBuyOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(12.00), 20);
@@ -67,7 +69,8 @@ class SettlementServiceUnitTests {
         // the method calls inside the settle() cannot be stubbed (since they are
         // part of the real object). The only option left is to spy.
         SettlementService spiedSettlementService =
-                spy(new SettlementService(userRepository));
+                spy(new SettlementService(userRepository,
+                        Executors.newFixedThreadPool(8)));
 
         Order incomingBuyOrder = new Order("user123",
                 Type.BUY, BigDecimal.valueOf(13.00), 20);

@@ -5,12 +5,10 @@ import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.models.UserWallet;
 import com.tejas.distributedmatchingengine.repositories.UserRepository;
-import lombok.Getter;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 @Service
@@ -19,12 +17,14 @@ public class SettlementService {
 
     private final static Logger logger =
             Logger.getLogger(SettlementService.class.getName());
-    @Getter
-    private final ExecutorService settlementHandler = Executors.newFixedThreadPool(
-            8);
+    private final ExecutorService settlementHandler;
 
-    public SettlementService(UserRepository userRepository) {
+    // settlementHandler is injected here because the handler can be controlled
+    // in tests
+    public SettlementService(UserRepository userRepository,
+                             ExecutorService settlementHandler) {
         this.userRepository = userRepository;
+        this.settlementHandler = settlementHandler;
     }
 
     // TODO: @Transactional
