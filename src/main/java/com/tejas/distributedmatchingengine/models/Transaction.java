@@ -17,7 +17,7 @@ public record Transaction(long transactionID,
     // objects can change their state after the transaction anyway. orderIDs
     // are lightweight. Because of this, the execution price must be passed
     // by the matching thread (lest they have to be retrieved from the Orders
-    // through the orderIDs causing unnecessary computation.
+    // through the orderIDs causing unnecessary computation).
     public Transaction(long transactionID,
                        Instant executionTime,
                        long restingOrderID,
@@ -30,15 +30,5 @@ public record Transaction(long transactionID,
                 qtyFulfilled,
                 executionPrice,
                 executionTime);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Transaction %s: %d shares @ ₹%s between %d and %d",
-                transactionID,
-                quantityFilled,
-                executionPrice.toPlainString(),
-                restingOrderID,
-                incomingOrderID);
     }
 }
