@@ -21,7 +21,7 @@ public class OrderUnitTests {
 
     @Test
     @DisplayName("Test that order is cancelled.")
-    public void orderIsCancelled() {
+    void orderIsCancelled() {
         order.cancel();
         assertEquals(Status.CANCELLED, order.getStatus());
     }

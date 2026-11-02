@@ -12,8 +12,8 @@ import java.util.UUID;
 
 /*
  * Contains the user's balance and shares bought.
- * For milestone 1, only a symbol (eg. BTC) and a legal tender
- * (eg. INR) is required. Therefore, all the "shares" here
+ * For milestone 1, only a symbol (e.g. BTC) and a legal tender
+ * (e.g. INR) is required. Therefore, all the "shares" here
  * imply the symbol and all the "balance" imply the legal tender.
  */
 @Getter

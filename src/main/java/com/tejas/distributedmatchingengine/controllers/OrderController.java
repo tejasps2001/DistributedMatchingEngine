@@ -18,7 +18,7 @@ public class OrderController {
     private final MatchingService matchingService;
     private final UserRepository userRepository;
 
-    private final static Logger logger = Logger.getLogger(
+    private static final Logger logger = Logger.getLogger(
             OrderController.class.getName());
 
     public OrderController(MatchingService matchingService,
@@ -38,8 +38,7 @@ public class OrderController {
             wallet.addOrderToWallet(newSellOrder);
             // The limit on the number of async tomcat threads will time out
             // requests during high load. Need to add the requests' orders to a
-            // queue and release the thread. CompletableFuture is better than a
-            // synchronized?
+            // queue and release the thread.
             Status matchStatus = matchingService.matchSell(newSellOrder);
             return switch (matchStatus) {
                 case Status.NEW -> ResponseEntity
@@ -47,8 +46,7 @@ public class OrderController {
                         .body("Couldn't fill order. Added to order book.");
                 case Status.PARTIALLY_FILLED -> ResponseEntity
                         .status(HttpStatus.OK)
-                        .body(String.format("""
-                                        Filled %d shares.""",
+                        .body(String.format("Filled %d shares.",
                                 newSellOrder.getQuantity() -
                                         newSellOrder.getRemainingQuantity()));
                 case Status.FILLED -> ResponseEntity
@@ -59,6 +57,7 @@ public class OrderController {
                         .body("No/Illegal Status provided.");
             };
         } else {
+            newSellOrder.cancel();
             return ResponseEntity
                     .status(HttpStatus.UNPROCESSABLE_CONTENT)
                     .body("Insufficient amount of shares!");
@@ -70,13 +69,7 @@ public class OrderController {
         logger.info("Received BUY order.");
         // The limit on the number of async tomcat threads will time out requests
         // during high load. Need to add the requests' orders to a queue and
-        // release the thread. CompletableFuture is better than a synchronized?
-        // TODO: Cancel the order in case of insufficient balance
-        //  How to earmark part of the balance when an Order is submitted?
-        //  Maybe do the earmarking here? Can't be async since another order
-        //  (maybe even for a different symbol even) can be sent from the same
-        //  user. But then the crediting and debiting calls are synchronous so
-        //  not much needs to be done other than calling them here.
+        // release the thread.
         UserWallet wallet = userRepository.findUserByID(newBuyOrder.getUserId())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
                         " userID:" + newBuyOrder.getUserId()));
@@ -96,10 +89,9 @@ public class OrderController {
                         .body("Couldn't fill order. Added to order book.");
                 case Status.PARTIALLY_FILLED -> ResponseEntity
                         .status(HttpStatus.OK)
-                        .body(String.format("""
-                                Bought %d shares.""",
-                        newBuyOrder.getQuantity() - newBuyOrder
-                                .getRemainingQuantity()));
+                        .body(String.format("Bought %d shares.",
+                                newBuyOrder.getQuantity() - newBuyOrder
+                                        .getRemainingQuantity()));
                 case Status.FILLED -> ResponseEntity
                         .status(HttpStatus.OK)
                         .body("Order executed.");
@@ -108,6 +100,7 @@ public class OrderController {
                         .body("No/Illegal Status provided.");
             };
         } else {
+            newBuyOrder.cancel();
             return ResponseEntity
                     .status(HttpStatus.UNPROCESSABLE_CONTENT)
                     .body("Insufficient funds!");

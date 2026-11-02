@@ -66,10 +66,7 @@ public class Order {
     public Status cancel() {
         if (status == Status.NEW) {
             status = Status.CANCELLED;
-        }
-
-        // TODO: modifying/cancelling partially filled orders.
-        else if (status == Status.PARTIALLY_FILLED) {
+        } else if (status == Status.PARTIALLY_FILLED) {
             return status;
         }
         return status;

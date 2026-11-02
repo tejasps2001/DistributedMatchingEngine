@@ -94,7 +94,7 @@ class MatchAndSettleIntegrationTest {
 
         // Settlement happens via an async executor. Therefore, have to wait
         // until the wallets arrive to their final state. Instead of adding a
-        // timeout for each assertion, use Awaitlity to wait on the whole block
+        // timeout for each assertion, use Awaitility to wait on the whole block
         // of assertions.
         await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
             var transactionLedger = transactionRepository.getTransactionsLedger();
@@ -140,7 +140,7 @@ class MatchAndSettleIntegrationTest {
 
         // Settlement happens via an async executor. Therefore, have to wait
         // until the wallets arrive to their final state. Instead of adding a
-        // timeout for each assertion, use Awaitlity to wait on the whole block
+        // timeout for each assertion, use Awaitility to wait on the whole block
         // of assertions.
         await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
             var transactionLedger = transactionRepository.getTransactionsLedger();

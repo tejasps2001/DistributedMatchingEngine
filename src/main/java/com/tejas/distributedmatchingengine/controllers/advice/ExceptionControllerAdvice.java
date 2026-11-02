@@ -1,9 +1,7 @@
 package com.tejas.distributedmatchingengine.controllers.advice;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.tejas.distributedmatchingengine.exceptions.UserNotFoundException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,6 +25,8 @@ public class ExceptionControllerAdvice {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleJsonParsingError(
             HttpMessageNotReadableException e) {
+        // Create a message string instead of writing them again and again
+        String errorMsg = "error";
         // Jackson's InvalidFormatException is wrapped in
         // HttpMessageNotReadableException by Spring
         if(e.getCause() instanceof InvalidFormatException invalidFormatE) {
@@ -45,7 +45,7 @@ public class ExceptionControllerAdvice {
                 Object[] enumConstants = targetType.getEnumConstants();
 
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                        Map.of("error", "Invalid enum value",
+                        Map.of(errorMsg, "Invalid enum value",
                                 "field", fieldName,
                                 "rejectedValue", invalidFormatE.getValue(),
                                 "allowedValues", Arrays.toString(enumConstants)
@@ -53,18 +53,18 @@ public class ExceptionControllerAdvice {
                 );
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "error", "Invalid format",
+                    errorMsg, "Invalid format",
                     "field", fieldName,
                     "rejectedValue", invalidFormatE.getValue()
             ));
         } else if (e.getCause() instanceof ValueInstantiationException) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of(errorMsg, e.getMessage()));
         }
         // For the cases where format is valid but the user input isn't
         // readable for some other reason
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                "error", "Malformed JSON request body"
+                errorMsg, "Malformed JSON request body"
         ));
     }
 
