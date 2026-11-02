@@ -14,17 +14,20 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
 public class MatchingService {
     private final OrderRepository orderRepository;
     private final TransactionRepository transactionRepository;
-    private final static Queue<Order> buyQueue;
-    private final static Queue<Order> sellQueue;
     private final SettlementService settlementService;
-    private final static Logger logger =
+    private static final Logger logger =
             Logger.getLogger(MatchingService.class.getName());
+
+    private static final Queue<Order> buyQueue;
+    private static final Queue<Order> sellQueue;
+
     // Mark the sequence of transactions occurring by an ID in the matching
     // thread itself using a static variable.
     // Reason: Matching thread A may execute an order later than matching
@@ -48,10 +51,16 @@ public class MatchingService {
         this.transactionRepository = transactionRepository;
     }
 
-    // ONLY ONE THREAD EXECUTES THIS. The core matching logic should be
-    // executed (both buy and sell) only by a single thread. (i.e., no
-    // concurrent matching) because the shared order books are updated.
-    // But orderController passes orders concurrently. Hence, synchronizing
+    /**
+     * Match a new BUY order with a SELL order.
+     * Orders are passed in concurrently by orderController. But they must be
+     * matched synchronously by a single thread (LMAX). There is no concurrent
+     * matching because it would cause inconsistent order books.
+     *
+     * @param newOrder A new, unmatched BUY order
+     * @return Status of the order after a successful
+     * (or unsuccessful) match
+     */
     public synchronized Status matchBuy(Order newOrder) {
         var asksBook = orderRepository.getAsksBook();
         // No orders to match to; add to order book
@@ -70,10 +79,16 @@ public class MatchingService {
         return newOrder.getStatus();
     }
 
-    // ONLY ONE THREAD EXECUTES THIS. The core matching logic should be
-    // executed (both buy and sell) only by a single thread. (i.e., no
-    // concurrent matching) because the shared order books are updated.
-    // But orderController passes orders concurrently. Hence, synchronizing
+    /**
+     * Match a new SELL order with a BUY order.
+     * Orders are passed in concurrently by orderController. But they must be
+     * matched synchronously by a single thread (LMAX). There is no concurrent
+     * matching because it would cause inconsistent order books.
+     *
+     * @param newOrder A new, unmatched SELL order
+     * @return Status of the order after a successful
+     * (or unsuccessful) match
+     */
     public synchronized Status matchSell(Order newOrder) {
         var bidsBook = orderRepository.getBidsBook();
         // No orders to match to; add to order book
@@ -97,7 +112,7 @@ public class MatchingService {
                                     Queue<Order>> suitableOrdersMap) {
         Iterator<Map.Entry<BigDecimal, Queue<Order>>> suitableOrdersIterator =
                 suitableOrdersMap.entrySet().iterator();
-        while(suitableOrdersIterator.hasNext()) {
+        while (suitableOrdersIterator.hasNext()) {
             var suitableOrders = suitableOrdersIterator.next();
             // If the order in the order book goes beyond the order's
             // bound then we stop matching & add the partially filled order to
@@ -114,9 +129,11 @@ public class MatchingService {
             }
             var orderQueue = suitableOrders.getValue();
             // Return if orderQueue is empty
-            if(orderQueue.isEmpty()) {
-                logger.info(String.format("No %s to match to!",
-                        newOrder.getType() == Type.BUY ? Type.SELL : Type.BUY));
+            if (orderQueue.isEmpty()) {
+                if (newOrder.getType() == Type.BUY)
+                    logger.log(Level.INFO, "No {} to match to!", Type.SELL);
+                else
+                    logger.log(Level.INFO, "No {} to match to!", Type.BUY);
                 suitableOrdersIterator.remove();
                 continue;
             }
@@ -130,15 +147,16 @@ public class MatchingService {
                 // Cancel the incoming order
                 if (Objects.equals(order.getUserId(), newOrder.getUserId())) {
                     logger.info("An attempt to self-trade was detected.");
-                    logger.info(String.format(
-                            "Cancelling %s accordingly.", newOrder));
+                    logger.log(Level.INFO,
+                            "Cancelling {} accordingly.", newOrder);
                     newOrder.cancel();
                     settlementService.settleCancellation(newOrder);
                     continue;
                 }
-                logger.info(String.format("""
-                            \n%s is suitable for the incoming %s.
-                        """, order.toCompactString(), newOrder.toCompactString()));
+                String msg = String.format("\n%s is suitable for the" +
+                                " incoming %s.", order.toCompactString(),
+                        newOrder.toCompactString());
+                logger.log(Level.INFO, msg);
                 var qtyFulfilled = Math.min(newOrder.getRemainingQuantity(),
                         order.getRemainingQuantity());
                 var qtyLeft = newOrder.getRemainingQuantity() -

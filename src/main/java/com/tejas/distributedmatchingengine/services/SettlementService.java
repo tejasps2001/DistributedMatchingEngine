@@ -8,6 +8,7 @@ import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Logger;
 
@@ -15,7 +16,7 @@ import java.util.logging.Logger;
 public class SettlementService {
     private final UserRepository userRepository;
 
-    private final static Logger logger =
+    private static final Logger logger =
             Logger.getLogger(SettlementService.class.getName());
     private final ExecutorService settlementHandler;
 
@@ -27,7 +28,13 @@ public class SettlementService {
         this.settlementHandler = settlementHandler;
     }
 
-    // TODO: @Transactional
+    /**
+     * Settle the transaction after a successful match
+     *
+     * @param restingOrder Resting order that was matched
+     * @param incomingOrder Incoming order that was matched
+     * @param qtyFulfilled The quantity of shares that were traded
+     */
     public void settle(Order restingOrder, Order incomingOrder, int qtyFulfilled) {
         settlementHandler.execute(() -> {
             if(restingOrder.getType() == Type.BUY) {
@@ -44,8 +51,14 @@ public class SettlementService {
     public void settleBuy(Order buyOrder,
                           BigDecimal executionPrice,
                           int qtyFulfilled) {
-        UserWallet wallet = userRepository.findUserByID(buyOrder.getUserId())
-                .get();
+        Optional<UserWallet> walletOptional =
+                userRepository.findUserByID(buyOrder.getUserId());
+        UserWallet wallet;
+        if(walletOptional.isPresent())
+            wallet = walletOptional.get();
+        else
+            throw new IllegalStateException("No wallet found when settling a" +
+                    " BUY order.");
 
         if (buyOrder.getStatus() == Status.PARTIALLY_FILLED ||
                 buyOrder.getStatus() == Status.FILLED) {
@@ -81,8 +94,14 @@ public class SettlementService {
     public void settleSell(Order sellOrder,
                            BigDecimal executionPrice,
                            int qtyFulfilled) {
-        UserWallet wallet = userRepository.findUserByID(sellOrder.getUserId())
-                .get();
+        Optional<UserWallet> walletOptional =
+                userRepository.findUserByID(sellOrder.getUserId());
+        UserWallet wallet;
+        if(walletOptional.isPresent())
+            wallet = walletOptional.get();
+        else
+            throw new IllegalStateException("No wallet found when settling a" +
+                    " SELL order.");
 
         if (sellOrder.getStatus() == Status.PARTIALLY_FILLED ||
                 sellOrder.getStatus() == Status.FILLED) {
@@ -111,8 +130,14 @@ public class SettlementService {
 
     public void settleCancellation(Order cancelledOrder) {
         settlementHandler.execute(() -> {
-            UserWallet wallet = userRepository.findUserByID(
-                    cancelledOrder.getUserId()).get();
+            Optional<UserWallet> walletOptional =
+                    userRepository.findUserByID(cancelledOrder.getUserId());
+            UserWallet wallet;
+            if(walletOptional.isPresent())
+                wallet = walletOptional.get();
+            else
+                throw new IllegalStateException("No wallet found when settling an" +
+                        " order cancellation.");
             if (cancelledOrder.getType() == Type.BUY) {
                 wallet.addToAvailableBalance(cancelledOrder.getPrice().multiply(
                         BigDecimal.valueOf(cancelledOrder.getQuantity())));
