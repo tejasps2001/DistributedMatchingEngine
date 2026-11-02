@@ -260,7 +260,7 @@ class OrderControllerUnitTests {
             "the userID in the UserRespository.")
     void buyingUserDoesNotExist() {
         Order sellOrder = new Order("user132",
-                Type.SELL, BigDecimal.valueOf(24.00), 10);
+                Type.BUY, BigDecimal.valueOf(24.00), 10);
 
         assertThrows(UserNotFoundException.class,
                 () -> orderController.placeSell(sellOrder));
