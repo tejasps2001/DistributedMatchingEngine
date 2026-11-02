@@ -134,6 +134,7 @@ public class MatchingService {
                     logger.log(Level.INFO, "No {} to match to!", Type.SELL);
                 else
                     logger.log(Level.INFO, "No {} to match to!", Type.BUY);
+                // Remove the empty order queue from the book
                 suitableOrdersIterator.remove();
                 continue;
             }
