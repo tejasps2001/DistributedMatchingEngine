@@ -5,17 +5,20 @@ import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.models.UserWallet;
 import com.tejas.distributedmatchingengine.repositories.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -25,8 +28,14 @@ class SettlementServiceUnitTests {
     @Mock
     private UserRepository userRepository;
 
-    @InjectMocks
     private SettlementService settlementService;
+    private ExecutorService settlementHandler;
+
+    @BeforeEach
+    void setUp() {
+        settlementHandler = Executors.newFixedThreadPool(8);
+        settlementService = new SettlementService(userRepository, settlementHandler);
+    }
 
     @Test
     @DisplayName("Test whether a resting BUY and an incoming SELL are properly" +
@@ -298,7 +307,7 @@ class SettlementServiceUnitTests {
 
     @Test
     @DisplayName("Test that a cancelled buy order is correctly settled.")
-    void settleCancelledBuy() throws InterruptedException {
+    void settleCancelledBuy() {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(114.00));
 
 
@@ -313,13 +322,16 @@ class SettlementServiceUnitTests {
 
         settlementService.settleCancellation(buyOrder);
 
-        Thread.sleep(1000);
-        assertEquals(0, BigDecimal.valueOf(114.00).compareTo(wallet.getAvailableBalance()));
+        settlementHandler.shutdown();
+        assertDoesNotThrow(() -> {
+            settlementHandler.awaitTermination(1, TimeUnit.MINUTES);
+            assertEquals(0, BigDecimal.valueOf(114.00).compareTo(wallet.getAvailableBalance()));
+        });
     }
 
     @Test
     @DisplayName("Test that a cancelled sell order is correctly settled.")
-    void settleCancelledSell() throws InterruptedException {
+    void settleCancelledSell() {
         UserWallet wallet = new UserWallet(BigDecimal.valueOf(114.00));
         wallet.addToTotalShares(10);
 
@@ -336,7 +348,10 @@ class SettlementServiceUnitTests {
 
         settlementService.settleCancellation(sellOrder);
 
-        Thread.sleep(1000);
-        assertEquals(10, wallet.getAvailableShares());
+        settlementHandler.shutdown();
+        assertDoesNotThrow(() -> {
+            settlementHandler.awaitTermination(1, TimeUnit.MINUTES);
+            assertEquals(10, wallet.getAvailableShares());
+        });
     }
 }

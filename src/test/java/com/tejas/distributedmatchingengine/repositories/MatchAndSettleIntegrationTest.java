@@ -1,4 +1,4 @@
-package com.tejas.distributedmatchingengine.integration;
+package com.tejas.distributedmatchingengine.repositories;
 
 import com.tejas.distributedmatchingengine.controllers.OrderController;
 import com.tejas.distributedmatchingengine.controllers.UserController;
@@ -6,32 +6,25 @@ import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.models.UserWallet;
-import com.tejas.distributedmatchingengine.repositories.OrderRepository;
-import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
+import com.tejas.distributedmatchingengine.services.MatchingService;
+import com.tejas.distributedmatchingengine.services.SettlementService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest
 class MatchAndSettleIntegrationTest {
-    @Autowired
     private OrderController orderController;
-
-    @Autowired
-    private UserController userController;
-
-    @Autowired
     private OrderRepository orderRepository;
-
-    @Autowired
     private TransactionRepository transactionRepository;
 
     private String newSellingUser;
@@ -43,6 +36,27 @@ class MatchAndSettleIntegrationTest {
     // Setup: create buyer and seller with appropriate balances and shares
     @BeforeEach
     void setUp() {
+        ExecutorService settlementHandler = Executors.newFixedThreadPool(8);
+        UserRepository userRepository = new UserRepository();
+        UserController userController = new UserController(userRepository);
+        transactionRepository = new TransactionRepository();
+        SettlementService settlementService = new SettlementService(userRepository, settlementHandler);
+
+        // Create new order books in each test run so that new test runs
+        // don't match orders with the orders in the old books.
+        orderRepository = new OrderRepository(
+                new TreeMap<>(Comparator.reverseOrder()),
+                new TreeMap<>(Comparator.naturalOrder())
+        );
+        MatchingService matchingService = new MatchingService(orderRepository,
+                settlementService, transactionRepository);
+
+        // Need to pass all the above to a fresh orderController instead of
+        // using autowiring lest it will order book already present in the context
+        // (previous repetition's order books) which can have unfilled orders.
+        orderController =
+                new OrderController(matchingService, userRepository);
+
         newBuyingUser = userController.createNewUser(240.00).getBody();
         newSellingUser = userController.createNewUser(0).getBody();
         buyerWallet = userController.getPortfolio(newBuyingUser).getBody();

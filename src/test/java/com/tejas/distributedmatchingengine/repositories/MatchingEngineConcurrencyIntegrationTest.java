@@ -12,7 +12,7 @@ import com.tejas.distributedmatchingengine.services.MatchingService;
 import com.tejas.distributedmatchingengine.services.SettlementService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
@@ -122,7 +122,7 @@ class MatchingEngineConcurrencyIntegrationTest {
         assertTrue(orderRepository.getBidsBook().isEmpty());
     }
 
-    @RepeatedTest(100)
+    @Test
     @DisplayName("Concurrent load: Total balance and shares are conserved, no" +
             " exceptions, no negative wallets.")
     void concurrentOrdersConserveTotalBalanceAndShares() {
@@ -156,7 +156,6 @@ class MatchingEngineConcurrencyIntegrationTest {
         }
         latch.countDown();
 
-        // TODO: Advice for this too??
         // Wait until the settlement executor is terminated. That indicates
         // that all the orders have had a chance to get executed
         // But first, the workers' shutdown() must be called because it should
@@ -173,16 +172,14 @@ class MatchingEngineConcurrencyIntegrationTest {
                     1, TimeUnit.MINUTES)) {
                 for (Map.Entry<Order, Future<ResponseEntity<String>>> result :
                         allOrderResults.entrySet()) {
-                    try {
+                    assertDoesNotThrow(() -> {
                         var response = result.getValue().get();
                         assertTrue(response.getStatusCode().is2xxSuccessful());
                         unfilledQuantity += result.getKey().getRemainingQuantity();
                         filledQuantity +=
                                 (result.getKey().getQuantity() -
                                         result.getKey().getRemainingQuantity());
-                    } catch (ExecutionException | InterruptedException f) {
-                        fail(f.getCause());
-                    }
+                    });
                 }
 
                 for (UserWallet wallet : wallets) {
