@@ -28,10 +28,6 @@ public class UserRepository {
     }
 
     // Will be replaced by Spring Data's built-in methods later
-    // TODO: Ensure "It's also possible that the map
-    //  explicitly maps the key to null." doesn't happen or,
-    //  don't return null for no user.
-    //  This changes with the introduction of Optional??
     public Optional<UserWallet> findUserByID(String userID) {
         UserWallet wallet = users.get(userID);
         return Optional.ofNullable(wallet);
