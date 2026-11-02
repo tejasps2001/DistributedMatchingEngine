@@ -27,6 +27,15 @@ public class UserRepository {
         return newUserWallet1.getUserID();
     }
 
+    public String addUserWithShares(BigDecimal balance
+            , int shares) {
+        UserWallet newUserWallet1 = new UserWallet(balance);
+        newUserWallet1.addToAvailableShares(shares);
+        newUserWallet1.addToTotalShares(shares);
+        users.put(newUserWallet1.getUserID(), newUserWallet1);
+        return newUserWallet1.getUserID();
+    }
+
     // Will be replaced by Spring Data's built-in methods later
     public Optional<UserWallet> findUserByID(String userID) {
         UserWallet wallet = users.get(userID);

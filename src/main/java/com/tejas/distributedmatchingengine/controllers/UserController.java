@@ -32,7 +32,8 @@ public class UserController {
     }
 
     @PostMapping("/createUser")
-    // Create a new user and return the userID of the created account
+    // Create a new user with the specified balance and return the userID of
+    // the created account
     public ResponseEntity<String> createNewUser(@RequestParam double balance) {
         if (balance < 0) return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_CONTENT)
@@ -40,5 +41,22 @@ public class UserController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(userRepository.addUser(BigDecimal.valueOf(balance)));
+    }
+
+    @PostMapping("/createUserWithShares")
+    // Create a new user with the specified balance and shares and return
+    // the userID of the created account
+    public ResponseEntity<String> createNewUserWithShares(@RequestParam double balance,
+                                                @RequestParam int shares) {
+        if (balance < 0)
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .body("Negative balance not allowed!");
+        if (shares < 0)
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
+                    .body("Number of shares can't be less than zero!");
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(userRepository.addUserWithShares(BigDecimal.valueOf(balance),
+                        shares));
     }
 }

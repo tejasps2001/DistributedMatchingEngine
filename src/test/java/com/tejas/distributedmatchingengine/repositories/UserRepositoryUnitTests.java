@@ -24,8 +24,17 @@ public class UserRepositoryUnitTests {
 
     @Test
     @DisplayName("Test whether a new user is added.")
-    public void userIsAdded() {
+    void userIsAdded() {
         String userID = userRepository.addUser(BigDecimal.valueOf(100.00));
+        Optional<UserWallet> wallet = userRepository.findUserByID(userID);
+        assertTrue(wallet.isPresent());
+    }
+
+    @Test
+    @DisplayName("Test whether a new user with shares is added.")
+    void userWithSharesIsAdded() {
+        String userID = userRepository.addUserWithShares
+                (BigDecimal.valueOf(100.00), 100);
         Optional<UserWallet> wallet = userRepository.findUserByID(userID);
         assertTrue(wallet.isPresent());
     }
@@ -33,7 +42,7 @@ public class UserRepositoryUnitTests {
     @Test
     @DisplayName("Test that user query returns the correct user's wallet if" +
             " present.")
-    public void findCorrectUserWallet() {
+    void findCorrectUserWallet() {
         users.put("user1243", new UserWallet(BigDecimal.valueOf(100.00)));
         Optional<UserWallet> wallet = userRepository.findUserByID(
                 "user1243");
@@ -43,7 +52,7 @@ public class UserRepositoryUnitTests {
     @Test
     @DisplayName("Test that user query returns empty Optional if userID not" +
             " present.")
-    public void returnEmptyOptionalWalletIfUserAbsent() {
+    void returnEmptyOptionalWalletIfUserAbsent() {
         Optional<UserWallet> wallet = userRepository.findUserByID(
                 "user1243");
         assertTrue(wallet.isEmpty());

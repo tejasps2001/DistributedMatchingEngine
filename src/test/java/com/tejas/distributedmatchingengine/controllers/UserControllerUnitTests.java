@@ -71,4 +71,31 @@ class UserControllerUnitTests {
         var result = userController.createNewUser(-100.00);
         assertEquals("Negative balance not allowed!", result.getBody());
     }
+
+    @Test
+    @DisplayName("Test that a new user with shares is created.")
+    void createNewUserWithSharesHappyFlow() {
+        userController.createNewUserWithShares(1000.00, 1000);
+        verify(userRepository)
+                .addUserWithShares(BigDecimal.valueOf(1000.00), 1000);
+    }
+
+    @Test
+    @DisplayName("Test that a new user is not created if a negative balance " +
+            "is given.")
+    public void doNotCreateUserWithSharesIfNegativeBalanceGiven() {
+        var result = userController.createNewUserWithShares(
+                -100.00, 100);
+        assertEquals("Negative balance not allowed!", result.getBody());
+    }
+
+    @Test
+    @DisplayName("Test that a new user is not created if a negative amount " +
+            "of shares is given.")
+    public void doNotCreateUserWithSharesIfNegativeSharesGiven() {
+        var result = userController.createNewUserWithShares(
+                100.00, -100);
+        assertEquals("Number of shares can't be less than zero!",
+                result.getBody());
+    }
 }
