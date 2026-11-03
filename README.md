@@ -175,7 +175,7 @@ the unique `userId`.
 
 ## Project Roadmap
 
-* [x] **Milestone 1: In-Memory Core & Benchmarks (Completed)**
+* ✅ **Milestone 1: In-Memory Core & Benchmarks (Completed)**
 * Deterministic FIFO limit order book with multi-level book sweeping.
 
 * Multi-asset double-entry wallet escrow ledger with price-improvement refunds.
