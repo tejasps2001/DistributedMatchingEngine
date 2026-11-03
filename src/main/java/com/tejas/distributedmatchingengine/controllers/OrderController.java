@@ -52,9 +52,9 @@ public class OrderController {
                 case Status.FILLED -> ResponseEntity
                         .status(HttpStatus.OK)
                         .body("Order executed.");
-                default -> ResponseEntity
-                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("No/Illegal Status provided.");
+                case Status.CANCELLED -> ResponseEntity
+                        .status(HttpStatus.CONFLICT)
+                        .body("Order cancelled due to self-trade prevention.");
             };
         } else {
             newSellOrder.setStatus(Status.CANCELLED);
@@ -88,9 +88,9 @@ public class OrderController {
                 case Status.FILLED -> ResponseEntity
                         .status(HttpStatus.OK)
                         .body("Order executed.");
-                default -> ResponseEntity
-                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("No/Illegal Status provided.");
+                case Status.CANCELLED -> ResponseEntity
+                        .status(HttpStatus.CONFLICT)
+                        .body("Order cancelled due to self-trade prevention.");
             };
         } else {
             newBuyOrder.setStatus(Status.CANCELLED);

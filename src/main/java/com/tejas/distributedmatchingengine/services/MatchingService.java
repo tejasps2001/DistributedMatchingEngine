@@ -132,9 +132,9 @@ public class MatchingService {
             // Return if orderQueue is empty
             if (orderQueue.isEmpty()) {
                 if (newOrder.getType() == Type.BUY)
-                    logger.log(Level.INFO, "No {} to match to!", Type.SELL);
+                    logger.log(Level.INFO, "No {0} to match to!", Type.SELL);
                 else
-                    logger.log(Level.INFO, "No {} to match to!", Type.BUY);
+                    logger.log(Level.INFO, "No {0} to match to!", Type.BUY);
                 // Remove the empty order queue from the book
                 suitableOrdersIterator.remove();
                 continue;
@@ -143,14 +143,11 @@ public class MatchingService {
                 if (order.getStatus() == Status.CANCELLED) {
                     settlementService.settleCancellation(order);
                     orderQueue.poll();
-                    continue;
+                    return;
                 }
                 // Self-Trade Prevention
                 // Cancel the incoming order
                 if (Objects.equals(order.getUserId(), newOrder.getUserId())) {
-                    logger.info("An attempt to self-trade was detected.");
-                    logger.log(Level.INFO,
-                            "Cancelling {} accordingly.", newOrder);
                     newOrder.setStatus(Status.CANCELLED);
                     settlementService.settleCancellation(newOrder);
                     continue;
