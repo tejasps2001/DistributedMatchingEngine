@@ -56,7 +56,8 @@ class MatchAndSettleIntegrationTest {
         // will be used (previous repetition's order books) which can have
         // unfilled orders.
         orderController =
-                new OrderController(matchingService, userRepository);
+                new OrderController(matchingService,
+                        userRepository, orderRepository);
 
         newBuyingUser = userController.createNewUser(240.00).getBody();
         newSellingUser = userController.createNewUser(0).getBody();

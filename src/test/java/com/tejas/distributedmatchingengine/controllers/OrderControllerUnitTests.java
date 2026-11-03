@@ -5,6 +5,7 @@ import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.models.UserWallet;
+import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import com.tejas.distributedmatchingengine.services.MatchingService;
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +31,9 @@ class OrderControllerUnitTests {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private OrderRepository orderRepository;
 
     @InjectMocks
     private OrderController orderController;
@@ -238,10 +242,12 @@ class OrderControllerUnitTests {
     void orderCancellationHappyFlow() {
         Order cancelOrder = new Order("user132",
                 Type.SELL, BigDecimal.valueOf(24.00), 10);
+        long orderID = cancelOrder.getOrderId();
 
-        cancelOrder.setStatus(Status.CANCELLED);
+        given(orderRepository.cancelOrder(orderID))
+                .willReturn(Optional.of(true));
 
-        var cancelStatus = orderController.cancelOrder(cancelOrder);
+        var cancelStatus = orderController.cancelOrder(orderID);
 
         assertEquals("Order cancelled.", cancelStatus.getBody());
     }
@@ -252,10 +258,12 @@ class OrderControllerUnitTests {
     void orderCancellationDeniedAlreadyFilled() {
         Order cancelOrder = new Order("user132",
                 Type.SELL, BigDecimal.valueOf(24.00), 10);
+        long orderID = cancelOrder.getOrderId();
 
-        cancelOrder.setStatus(Status.FILLED);
+        given(orderRepository.cancelOrder(orderID))
+                .willReturn(Optional.of(false));
 
-        var cancelStatus = orderController.cancelOrder(cancelOrder);
+        var cancelStatus = orderController.cancelOrder(orderID);
 
         assertEquals("Couldn't cancel. Order already filled.",
                 cancelStatus.getBody());

@@ -1,6 +1,7 @@
 package com.tejas.distributedmatchingengine.repositories;
 
 import com.tejas.distributedmatchingengine.models.Order;
+import com.tejas.distributedmatchingengine.models.Status;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Repository;
@@ -57,5 +58,33 @@ public class OrderRepository {
         var newQueue = new ArrayDeque<Order>();
         newQueue.add(newOrder);
         orderBook.put(newOrder.getPrice(), newQueue);
+    }
+
+    public Optional<Boolean> cancelOrder(long orderID) {
+        for (Queue<Order> orderQueue : bidsBook.values()) {
+            for (Order order : orderQueue) {
+                if(order.getOrderId() == orderID) {
+                    if (order.getStatus() == Status.NEW) {
+                        order.setStatus(Status.CANCELLED);
+                        return Optional.of(true);
+                    } else if (order.getStatus() == Status.PARTIALLY_FILLED) {
+                        return Optional.of(false);
+                    }
+                }
+            }
+        }
+        for (Queue<Order> orderQueue : asksBook.values()) {
+            for (Order order : orderQueue) {
+                if(order.getOrderId() == orderID) {
+                    if (order.getStatus() == Status.NEW) {
+                        order.setStatus(Status.CANCELLED);
+                        return Optional.of(true);
+                    } else if (order.getStatus() == Status.PARTIALLY_FILLED) {
+                        return Optional.of(false);
+                    }
+                }
+            }
+        }
+        return Optional.empty();
     }
 }

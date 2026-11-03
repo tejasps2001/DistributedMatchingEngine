@@ -4,6 +4,7 @@ import com.tejas.distributedmatchingengine.exceptions.UserNotFoundException;
 import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.UserWallet;
+import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import com.tejas.distributedmatchingengine.services.MatchingService;
 import org.springframework.http.HttpStatus;
@@ -20,11 +21,13 @@ public class OrderController {
 
     private static final Logger logger = Logger.getLogger(
             OrderController.class.getName());
+    private final OrderRepository orderRepository;
 
     public OrderController(MatchingService matchingService,
-                           UserRepository userRepository) {
+                           UserRepository userRepository, OrderRepository orderRepository) {
         this.matchingService = matchingService;
         this.userRepository = userRepository;
+        this.orderRepository = orderRepository;
     }
 
     @PostMapping("/sell")
@@ -54,7 +57,7 @@ public class OrderController {
                         .body("No/Illegal Status provided.");
             };
         } else {
-            newSellOrder.cancel();
+            newSellOrder.setStatus(Status.CANCELLED);
             return ResponseEntity
                     .status(HttpStatus.UNPROCESSABLE_CONTENT)
                     .body("Insufficient amount of shares!");
@@ -90,7 +93,7 @@ public class OrderController {
                         .body("No/Illegal Status provided.");
             };
         } else {
-            newBuyOrder.cancel();
+            newBuyOrder.setStatus(Status.CANCELLED);
             return ResponseEntity
                     .status(HttpStatus.UNPROCESSABLE_CONTENT)
                     .body("Insufficient funds!");
@@ -98,18 +101,18 @@ public class OrderController {
     }
 
     @DeleteMapping("/cancel")
-    public ResponseEntity<String> cancelOrder(@RequestBody Order toCancelOrder) {
+    public ResponseEntity<String> cancelOrder(@RequestParam long orderID) {
         logger.info("Received request for cancellation.");
-        Status cancelStatus = toCancelOrder.cancel();
-        return switch (cancelStatus) {
-            case Status.CANCELLED -> ResponseEntity
+        var cancelStatus = orderRepository.cancelOrder(orderID);
+        return cancelStatus.map(status -> switch (status) {
+            case true -> ResponseEntity
                     .status(HttpStatus.OK)
                     .body("Order cancelled.");
-            case Status.FILLED -> ResponseEntity
+            case false -> ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body("Couldn't cancel. Order already filled.");
-            default -> throw new IllegalStateException("Unexpected value for" +
-                    " cancelStatus: " + cancelStatus);
-        };
+        }).orElseGet(() -> ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(String.format("Order with %d not found.", orderID)));
     }
 }

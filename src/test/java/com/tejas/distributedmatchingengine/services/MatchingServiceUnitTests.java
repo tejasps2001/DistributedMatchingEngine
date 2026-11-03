@@ -579,7 +579,7 @@ class MatchingServiceUnitTests {
                 new TreeMap<>(Comparator.reverseOrder());
         orderBook.put(BigDecimal.valueOf(12.00), buyOrderQueue);
 
-        restingOrder.cancel();
+        restingOrder.setStatus(Status.CANCELLED);
 
         matchingService.matchOrders(incomingOrder, orderBook);
 

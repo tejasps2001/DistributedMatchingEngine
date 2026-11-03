@@ -62,13 +62,4 @@ public class Order {
         return String.format("%s order of %d @ ₹%s",
                 type, quantity, price.toPlainString());
     }
-
-    public Status cancel() {
-        if (status == Status.NEW) {
-            status = Status.CANCELLED;
-        } else if (status == Status.PARTIALLY_FILLED) {
-            return status;
-        }
-        return status;
-    }
 }

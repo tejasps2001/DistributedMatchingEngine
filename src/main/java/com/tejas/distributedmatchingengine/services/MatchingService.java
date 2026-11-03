@@ -151,7 +151,7 @@ public class MatchingService {
                     logger.info("An attempt to self-trade was detected.");
                     logger.log(Level.INFO,
                             "Cancelling {} accordingly.", newOrder);
-                    newOrder.cancel();
+                    newOrder.setStatus(Status.CANCELLED);
                     settlementService.settleCancellation(newOrder);
                     continue;
                 }
