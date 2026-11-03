@@ -9,6 +9,7 @@ import com.tejas.distributedmatchingengine.models.UserWallet;
 import com.tejas.distributedmatchingengine.services.MatchingService;
 import com.tejas.distributedmatchingengine.services.SettlementService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -25,6 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MatchAndSettleIntegrationTest {
     private OrderController orderController;
     private OrderRepository orderRepository;
+    private UserRepository userRepository;
+    private ExecutorService settlementHandler;
     private TransactionRepository transactionRepository;
 
     private String newSellingUser;
@@ -36,8 +39,8 @@ class MatchAndSettleIntegrationTest {
     // Setup: create buyer and seller with appropriate balances and shares
     @BeforeEach
     void setUp() {
-        ExecutorService settlementHandler = Executors.newFixedThreadPool(8);
-        UserRepository userRepository = new UserRepository();
+        settlementHandler = Executors.newFixedThreadPool(8);
+        userRepository = new UserRepository();
         UserController userController = new UserController(userRepository);
         transactionRepository = new TransactionRepository();
         SettlementService settlementService = new SettlementService(userRepository, settlementHandler);
@@ -159,5 +162,40 @@ class MatchAndSettleIntegrationTest {
             assertEquals(BigDecimal.valueOf(240.00), sellerWallet.getTotalBalance());
             assertEquals(BigDecimal.valueOf(240.00), sellerWallet.getAvailableBalance());
         });
+    }
+
+    @Test
+    @DisplayName("Cancelling a resting limit buy order must restore escrow back to available balance")
+    void cancelOrderShouldReleaseEscrowBackToAvailableBalance() {
+        String buyingUserId = userRepository.addUser(BigDecimal.valueOf(1000.00));
+        String sellingUserId = userRepository.addUserWithShares(BigDecimal.valueOf(1000.00), 10);
+        // Order to be canceled
+        Order buyOrder = new Order(buyingUserId, Type.BUY, new BigDecimal("100.00"), 5);
+        // Order that triggers the removal of the above canceled BUY order
+        Order sellOrder = new Order(sellingUserId, Type.SELL, new BigDecimal("100.00"), 5);
+
+        orderController.placeBuy(buyOrder);
+
+        UserWallet wallet = userRepository.findUserByID(buyingUserId).orElseThrow();
+        assertEquals(0, wallet.getAvailableBalance().compareTo(BigDecimal.valueOf(500.00)));
+        assertEquals(0, wallet.getTotalBalance().compareTo(BigDecimal.valueOf(1000.00)));
+        // Verify that the buyOrder is in the bidsBook
+        assertTrue(orderRepository.getBidsBook().get(buyOrder.getPrice()).contains(buyOrder));
+
+        var cancelStatus =  orderController.cancelOrder(buyOrder.getOrderId());
+        assertEquals("Order cancelled.", cancelStatus.getBody());
+        assertEquals(Status.CANCELLED, buyOrder.getStatus());
+
+        // Verify the canceled order leads to restoration of the wallet balance
+        orderController.placeSell(sellOrder);
+        settlementHandler.shutdown();
+        try {
+            settlementHandler.awaitTermination(30, TimeUnit.SECONDS);
+            assertEquals(0, wallet.getAvailableBalance()
+                    .compareTo(BigDecimal.valueOf(1000.00)));
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 }
