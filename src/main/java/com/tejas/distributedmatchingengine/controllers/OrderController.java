@@ -36,9 +36,6 @@ public class OrderController {
         // Check if the user contains the required amount of shares
         if (wallet.tryDeductFromAvailableShares(newSellOrder.getQuantity())) {
             wallet.addOrderToWallet(newSellOrder);
-            // The limit on the number of async tomcat threads will time out
-            // requests during high load. Need to add the requests' orders to a
-            // queue and release the thread.
             Status matchStatus = matchingService.matchSell(newSellOrder);
             return switch (matchStatus) {
                 case Status.NEW -> ResponseEntity
@@ -67,9 +64,6 @@ public class OrderController {
     @PostMapping("/buy")
     public ResponseEntity<String> placeBuy(@RequestBody Order newBuyOrder) {
         logger.info("Received BUY order.");
-        // The limit on the number of async tomcat threads will time out requests
-        // during high load. Need to add the requests' orders to a queue and
-        // release the thread.
         UserWallet wallet = userRepository.findUserByID(newBuyOrder.getUserId())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
                         " userID:" + newBuyOrder.getUserId()));
@@ -78,10 +72,6 @@ public class OrderController {
                 BigDecimal.valueOf(newBuyOrder.getQuantity())
         ))) {
             wallet.addOrderToWallet(newBuyOrder);
-            // The limit on the number of async tomcat threads will time out
-            // requests during high load. Need to add the requests' orders to a
-            // queue and release the thread. CompletableFuture is better than a
-            // synchronized?
             Status matchStatus = matchingService.matchBuy(newBuyOrder);
             return switch (matchStatus) {
                 case Status.NEW -> ResponseEntity
@@ -110,7 +100,6 @@ public class OrderController {
     @DeleteMapping("/cancel")
     public ResponseEntity<String> cancelOrder(@RequestBody Order toCancelOrder) {
         logger.info("Received request for cancellation.");
-        // If order already filled, then inform user with success code
         Status cancelStatus = toCancelOrder.cancel();
         return switch (cancelStatus) {
             case Status.CANCELLED -> ResponseEntity

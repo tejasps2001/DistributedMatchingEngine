@@ -52,15 +52,16 @@ class MatchAndSettleIntegrationTest {
                 settlementService, transactionRepository);
 
         // Need to pass all the above to a fresh orderController instead of
-        // using autowiring lest it will order book already present in the context
-        // (previous repetition's order books) which can have unfilled orders.
+        // using autowiring lest the order book already present in the context
+        // will be used (previous repetition's order books) which can have
+        // unfilled orders.
         orderController =
                 new OrderController(matchingService, userRepository);
 
         newBuyingUser = userController.createNewUser(240.00).getBody();
         newSellingUser = userController.createNewUser(0).getBody();
-        buyerWallet = userController.getPortfolio(newBuyingUser).getBody();
-        sellerWallet = userController.getPortfolio(newSellingUser).getBody();
+        buyerWallet = userController.getWallet(newBuyingUser).getBody();
+        sellerWallet = userController.getWallet(newSellingUser).getBody();
         assert buyerWallet != null;
         assert sellerWallet != null;
         sellerWallet.addToTotalShares(20);
@@ -89,10 +90,10 @@ class MatchAndSettleIntegrationTest {
         assertTrue(orderRepository.getAsksBook()
                 .firstEntry().getValue().isEmpty());
         // The buy order isn't added to the bids book because it gets matched
-        // as soon as it arrives
+        // as soon as it arrives. Hence, the bids book must be empty.
         assertTrue(orderRepository.getBidsBook().isEmpty());
 
-        // Settlement happens via an async executor. Therefore, have to wait
+        // Settlement happens via an async executor. Therefore, we have to wait
         // until the wallets arrive to their final state. Instead of adding a
         // timeout for each assertion, use Awaitility to wait on the whole block
         // of assertions.
@@ -135,10 +136,10 @@ class MatchAndSettleIntegrationTest {
         assertTrue(orderRepository.getBidsBook()
                 .firstEntry().getValue().isEmpty());
         // The sell order isn't added to the asks book because it gets matched
-        // as soon as it arrives
+        // as soon as it arrives. Hence, the asks book must be empty.
         assertTrue(orderRepository.getAsksBook().isEmpty());
 
-        // Settlement happens via an async executor. Therefore, have to wait
+        // Settlement happens via an async executor. Therefore, we have to wait
         // until the wallets arrive to their final state. Instead of adding a
         // timeout for each assertion, use Awaitility to wait on the whole block
         // of assertions.

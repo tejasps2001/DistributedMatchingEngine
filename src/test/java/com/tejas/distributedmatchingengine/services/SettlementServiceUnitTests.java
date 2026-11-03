@@ -41,9 +41,10 @@ class SettlementServiceUnitTests {
     @DisplayName("Test whether a resting BUY and an incoming SELL are properly" +
             " settled.")
     void settleRestingBuyIncomingSell() {
-        // Spying on the tested object since settle() returns nothing and
-        // the method calls inside the settle() cannot be stubbed (since they are
-        // part of the real object). The only option left is to spy.
+        // Spying on the tested object instead of mocking since
+        // settle() returns nothing and the method calls inside
+        // the settle() cannot be stubbed (since they are part
+        // of the real object). The only option left is to spy.
         SettlementService spiedSettlementService =
                 spy(new SettlementService(userRepository,
                         Executors.newFixedThreadPool(8)));
@@ -55,7 +56,8 @@ class SettlementServiceUnitTests {
                 Type.SELL, BigDecimal.valueOf(11.00), 20);
 
         // Do nothing when the actual methods are called by the spied object
-        // since only the settle() is being tested right now
+        // since only the settle() is being tested right now. This prevents
+        // side effects.
         doNothing().when(spiedSettlementService).settleBuy(any(), any(), anyInt());
         doNothing().when(spiedSettlementService).settleSell(any(), any(), anyInt());
 
@@ -63,7 +65,7 @@ class SettlementServiceUnitTests {
                 incomingSellOrder, 20);
 
         // Timeout set so that verify waits until the asynchronous executor picks
-        // up the task and executes the below method calls.
+        // up the task and executes the method calls below.
         verify(spiedSettlementService, timeout(1000)).settleBuy(restingBuyOrder,
                 restingBuyOrder.getPrice(), 20);
         verify(spiedSettlementService, timeout(1000)).settleSell(incomingSellOrder,
@@ -74,9 +76,10 @@ class SettlementServiceUnitTests {
     @DisplayName("Test whether a resting SELL and an incoming BUY are properly" +
             " settled.")
     void settleRestingSellIncomingBuy() {
-        // Spying on the tested object since settle() returns nothing and
-        // the method calls inside the settle() cannot be stubbed (since they are
-        // part of the real object). The only option left is to spy.
+        // Spying on the tested object instead of mocking since
+        // settle() returns nothing and the method calls inside
+        // the settle() cannot be stubbed (since they are part
+        // of the real object). The only option left is to spy.
         SettlementService spiedSettlementService =
                 spy(new SettlementService(userRepository,
                         Executors.newFixedThreadPool(8)));
@@ -88,7 +91,8 @@ class SettlementServiceUnitTests {
                 Type.SELL, BigDecimal.valueOf(12.00), 20);
 
         // Do nothing when the actual methods are called by the spied object
-        // since only the settle() is being tested right now
+        // since only the settle() is being tested right now. This prevents
+        // side effects.
         doNothing().when(spiedSettlementService).settleBuy(any(), any(), anyInt());
         doNothing().when(spiedSettlementService).settleSell(any(), any(), anyInt());
 
@@ -96,7 +100,7 @@ class SettlementServiceUnitTests {
                 incomingBuyOrder, 20);
 
         // Timeout set so that verify waits until the asynchronous executor picks
-        // up the task and executes the below method calls.
+        // up the task and executes the method calls below.
         verify(spiedSettlementService, timeout(1000)).settleBuy(incomingBuyOrder,
                 restingSellOrder.getPrice(), 20);
         verify(spiedSettlementService, timeout(1000)).settleSell(restingSellOrder,
@@ -112,8 +116,8 @@ class SettlementServiceUnitTests {
         Order sellOrder = new Order(wallet.getUserID(),
                 Type.SELL, BigDecimal.valueOf(11.00), 20);
 
-        // When a sell order is sent to the orderController, it ties up the
-        // allocated shares by deducting from availableShares. Hence, set to
+        // When a sell order is sent to the orderController, it ties up all the
+        // allocated shares by deducting from availableShares. Hence, setting to
         // 0 below
         wallet.addToAvailableShares(0);
 
@@ -139,8 +143,8 @@ class SettlementServiceUnitTests {
         Order sellOrder = new Order(wallet.getUserID(),
                 Type.SELL, BigDecimal.valueOf(11.00), 20);
 
-        // When a sell order is sent to the orderController, it ties up the
-        // allocated shares by deducting from availableShares. Hence, set to
+        // When a sell order is sent to the orderController, it ties up all the
+        // allocated shares by deducting from availableShares. Hence, setting to
         // 0 below
         wallet.addToAvailableShares(0);
 
@@ -167,8 +171,8 @@ class SettlementServiceUnitTests {
         Order sellOrder = new Order(wallet.getUserID(),
                 Type.SELL, BigDecimal.valueOf(11.00), 20);
 
-        // When a sell order is sent to the orderController, it ties up the
-        // allocated shares by deducting from availableShares. Hence, set to
+        // When a sell order is sent to the orderController, it ties up all the
+        // allocated shares by deducting from availableShares. Hence, setting to
         // 0 below
         wallet.addToAvailableShares(0);
 
@@ -195,8 +199,8 @@ class SettlementServiceUnitTests {
         Order sellOrder = new Order(wallet.getUserID(),
                 Type.SELL, BigDecimal.valueOf(11.00), 20);
 
-        // When a sell order is sent to the orderController, it ties up the
-        // allocated shares by deducting from availableShares. Hence, set to
+        // When a sell order is sent to the orderController, it ties up all the
+        // allocated shares by deducting from availableShares. Hence, setting to
         // 0 below
         wallet.addToAvailableShares(0);
 
@@ -338,8 +342,8 @@ class SettlementServiceUnitTests {
         Order sellOrder = new Order(wallet.getUserID(),
                 Type.SELL, BigDecimal.valueOf(11.00), 10);
 
-        // When a sell order is sent to the orderController, it ties up the
-        // allocated shares by deducting from availableShares. Hence, set to
+        // When a sell order is sent to the orderController, it ties up all the
+        // allocated shares by deducting from availableShares. Hence, setting to
         // 0 below
         wallet.addToAvailableShares(0);
 

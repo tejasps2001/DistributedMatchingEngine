@@ -1,3 +1,3 @@
 package com.tejas.distributedmatchingengine.models;
 
-public enum Type { BUY, SELL }
+public enum Type {BUY, SELL}

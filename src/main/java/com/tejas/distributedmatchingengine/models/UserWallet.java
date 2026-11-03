@@ -23,16 +23,16 @@ public class UserWallet {
     private String userID;
     private List<Order> orderList;
 
-    // Balance available for new BUYs
+    // Balance available for new BUY orders
     private BigDecimal availableBalance;
-    // Total value of the account. Balance available for new BUYs +
-    // balance tied up to BUY orders
+    // Total value of the account.
+    // Balance available for new BUYs + balance tied up in old BUY orders
     private BigDecimal totalBalance;
 
-    // Shares available for new SELLs
+    // Shares available for new SELL orders
     private int availableShares;
     // Total number of shares in the account.
-    // Shares available for new SELLs + shares tied up to SELL orders
+    // Shares available for new SELLs + shares tied up in old SELL orders
     private int totalShares;
 
     public UserWallet(BigDecimal balance) {
@@ -47,27 +47,27 @@ public class UserWallet {
     }
 
     // When we have multiple symbol pairs being traded by a single user, one
-    // order in the order book maybe executed while another order may be
-    // matched simultaneously. In that case, this method may be called
-    // simultaneously leading to race conditions. Therefore, better to have
+    // order in the order book maybe matched while another order (of a different
+    // symbol) may be matched simultaneously. In this case, this method may be called
+    // simultaneously leading to race conditions. Therefore, it is better to have
     // this synchronized.
     public synchronized void addToAvailableBalance(BigDecimal credit) {
         availableBalance = availableBalance.add(credit);
     }
 
     // When we have multiple symbol pairs being traded by a single user, one
-    // order in the order book maybe executed while another order may be
-    // matched simultaneously. In that case, this method may be called
-    // simultaneously leading to race conditions. Therefore, better to have
+    // order in the order book maybe matched while another order (of a different
+    // symbol) may be matched simultaneously. In this case, this method may be called
+    // simultaneously leading to race conditions. Therefore, it is better to have
     // this synchronized.
     public synchronized void addToTotalBalance(BigDecimal credit) {
         totalBalance = totalBalance.add(credit);
     }
 
     // When we have multiple symbol pairs being traded by a single user, one
-    // order in the order book maybe executed while another order may be
-    // matched simultaneously. In that case, this method may be called
-    // simultaneously leading to race conditions. Therefore, better to have
+    // order in the order book maybe matched while another order (of a different
+    // symbol) may be matched simultaneously. In this case, this method may be called
+    // simultaneously leading to race conditions. Therefore, it is better to have
     // this synchronized.
     // Return true for success, false for negative balance
     public synchronized boolean tryDeductFromAvailableBalance(BigDecimal debit) {
@@ -81,13 +81,13 @@ public class UserWallet {
     }
 
     // When we have multiple symbol pairs being traded by a single user, one
-    // order in the order book maybe executed while another order may be
-    // matched simultaneously. In that case, this method may be called
-    // simultaneously leading to race conditions. Therefore, better to have
+    // order in the order book maybe matched while another order (of a different
+    // symbol) may be matched simultaneously. In this case, this method may be called
+    // simultaneously leading to race conditions. Therefore, it is better to have
     // this synchronized.
     // Return true for success, false for negative balance
     public synchronized boolean tryDeductFromTotalBalance(BigDecimal debit) {
-        // Negative balance; Do not update balance
+        // Negative balance; Therefore, do not update balance
         if (totalBalance.compareTo(debit) < 0) {
             return false;
         } else {
@@ -97,29 +97,29 @@ public class UserWallet {
     }
 
     // When we have multiple symbol pairs being traded by a single user, one
-    // order in the order book maybe executed while another order may be
-    // matched simultaneously. In that case, this method may be called
-    // simultaneously leading to race conditions. Therefore, better to have
+    // order in the order book maybe matched while another order (of a different
+    // symbol) may be matched simultaneously. In this case, this method may be called
+    // simultaneously leading to race conditions. Therefore, it is better to have
     // this synchronized.
     public synchronized void addToAvailableShares(int shares) {
         availableShares += shares;
     }
 
     // When we have multiple symbol pairs being traded by a single user, one
-    // order in the order book maybe executed while another order may be
-    // matched simultaneously. In that case, this method may be called
-    // simultaneously leading to race conditions. Therefore, better to have
+    // order in the order book maybe matched while another order (of a different
+    // symbol) may be matched simultaneously. In this case, this method may be called
+    // simultaneously leading to race conditions. Therefore, it is better to have
     // this synchronized.
     public synchronized void addToTotalShares(int shares) {
         totalShares += shares;
     }
 
     // When we have multiple symbol pairs being traded by a single user, one
-    // order in the order book maybe executed while another order may be
-    // matched simultaneously. In that case, this method may be called
-    // simultaneously leading to race conditions. Therefore, better to have
+    // order in the order book maybe matched while another order (of a different
+    // symbol) may be matched simultaneously. In this case, this method may be called
+    // simultaneously leading to race conditions. Therefore, it is better to have
     // this synchronized.
-    // Return true for success, false for negative balance
+    // Return true for success, false for negative number of shares
     public synchronized boolean tryDeductFromAvailableShares(int shares) {
         // Negative number of shares; Do not update
         if (availableShares < shares) {
@@ -131,11 +131,11 @@ public class UserWallet {
     }
 
     // When we have multiple symbol pairs being traded by a single user, one
-    // order in the order book maybe executed while another order may be
-    // matched simultaneously. In that case, this method may be called
-    // simultaneously leading to race conditions. Therefore, better to have
+    // order in the order book maybe matched while another order (of a different
+    // symbol) may be matched simultaneously. In this case, this method may be called
+    // simultaneously leading to race conditions. Therefore, it is better to have
     // this synchronized.
-    // Return true for success, false for negative balance
+    // Return true for success, false for negative number of shares
     public synchronized boolean tryDeductFromTotalShares(int shares) {
         // Negative number of shares; Do not update
         if (totalShares < shares) {

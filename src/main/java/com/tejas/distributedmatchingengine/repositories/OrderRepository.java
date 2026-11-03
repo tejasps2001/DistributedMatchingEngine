@@ -28,7 +28,7 @@ public class OrderRepository {
     }
 
     /**
-     * Add a resting BUY order to the order book. This should be called if the order
+     * Add a BUY order to the order book. This should be called if the order
      * couldn't be immediately matched with any existing resting SELL order.
      *
      * @param newBuyOrder A new, unmatched resting BUY order
@@ -38,7 +38,7 @@ public class OrderRepository {
     }
 
     /**
-     * Add a resting SELL order to the order book. This should be called if the order
+     * Add a SELL order to the order book. This should be called if the order
      * couldn't be immediately matched with any existing resting BUY order.
      *
      * @param newSellOrder A new, unmatched resting SELL order
@@ -49,7 +49,7 @@ public class OrderRepository {
 
     public void addOrder(Order newOrder,
                          SortedMap<BigDecimal, Queue<Order>> orderBook) {
-        if(orderBook.get(newOrder.getPrice()) != null) {
+        if (orderBook.get(newOrder.getPrice()) != null) {
             var orderList = orderBook.get(newOrder.getPrice());
             orderList.add(newOrder);
             return;

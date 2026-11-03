@@ -29,11 +29,12 @@ public class MatchingService {
     private static final Queue<Order> sellQueue;
 
     // Mark the sequence of transactions occurring by an ID in the matching
-    // thread itself using a static variable.
+    // thread itself instead of using a static variable.
     // Reason: Matching thread A may execute an order later than matching
-    // thread B. But matching thread A may acquire the lock first.
+    // thread B. But matching thread A may acquire the lock on the
+    // transactionRecorder executor first.
     // Noting the transactionID in the matching thread itself allows for
-    // proper sequence of transactions.
+    // the proper sequence of transactions.
     private static final AtomicLong nextTransactionID = new AtomicLong(1);
     private static final ExecutorService transactionRecorder =
             Executors.newSingleThreadExecutor();
@@ -54,8 +55,8 @@ public class MatchingService {
     /**
      * Match a new BUY order with a SELL order.
      * Orders are passed in concurrently by orderController. But they must be
-     * matched synchronously by a single thread (LMAX). There is no concurrent
-     * matching because it would cause inconsistent order books.
+     * matched synchronously by a single thread. There is no concurrent
+     * matching because it would cause inconsistent order books (LMAX).
      *
      * @param newOrder A new, unmatched BUY order
      * @return Status of the order after a successful
@@ -82,8 +83,8 @@ public class MatchingService {
     /**
      * Match a new SELL order with a BUY order.
      * Orders are passed in concurrently by orderController. But they must be
-     * matched synchronously by a single thread (LMAX). There is no concurrent
-     * matching because it would cause inconsistent order books.
+     * matched synchronously by a single thread. There is no concurrent
+     * matching because it would cause inconsistent order books (LMAX).
      *
      * @param newOrder A new, unmatched SELL order
      * @return Status of the order after a successful
@@ -114,7 +115,7 @@ public class MatchingService {
                 suitableOrdersMap.entrySet().iterator();
         while (suitableOrdersIterator.hasNext()) {
             var suitableOrders = suitableOrdersIterator.next();
-            // If the order in the order book goes beyond the order's
+            // If the order price in the order book goes beyond the incoming order's
             // bound then we stop matching & add the partially filled order to
             // the order book
             if (newOrder.getType() == Type.BUY &&

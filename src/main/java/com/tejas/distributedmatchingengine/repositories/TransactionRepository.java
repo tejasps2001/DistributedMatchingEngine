@@ -10,17 +10,14 @@ import java.util.concurrent.*;
 
 @Repository
 public class TransactionRepository {
-    // Using a concurrency supporting data structure here because one user
-    // may be executing multiple orders (of different symbol pairs) at the
-    // same time.
-    // Use timestamp as the key.
-    // Using a sorting data structure to sort based on the transactionID.
+    // Use a concurrency supporting data structure here because multiple
+    // matching threads may be recording transactions (of different symbol pairs)
+    // at the same time.
+    // Use a sorting data structure to sort based on the transactionID.
     @Getter
     private final ConcurrentNavigableMap<Long, Transaction> transactionsLedger;
 
     public TransactionRepository() {
-        // Using skip list map for sorting the transactions based on
-        // the order execution time
         this.transactionsLedger = new ConcurrentSkipListMap<>();
     }
 

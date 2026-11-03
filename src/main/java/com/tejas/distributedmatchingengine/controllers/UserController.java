@@ -20,9 +20,8 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping("/portfolio")
-    // Get the total and the available balance of the user
-    public ResponseEntity<UserWallet> getPortfolio(@RequestParam String userID) {
+    @GetMapping("/wallet")
+    public ResponseEntity<UserWallet> getWallet(@RequestParam String userID) {
         UserWallet wallet = userRepository.findUserByID(userID)
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
                         " userID:" + userID));
@@ -47,10 +46,10 @@ public class UserController {
     // Create a new user with the specified balance and shares and return
     // the userID of the created account
     public ResponseEntity<String> createNewUserWithShares(@RequestParam double balance,
-                                                @RequestParam int shares) {
+                                                          @RequestParam int shares) {
         if (balance < 0)
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
-                .body("Negative balance not allowed!");
+                    .body("Negative balance not allowed!");
         if (shares < 0)
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
                     .body("Number of shares can't be less than zero!");
