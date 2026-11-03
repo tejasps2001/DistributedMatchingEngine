@@ -7,6 +7,7 @@ import com.tejas.distributedmatchingengine.models.UserWallet;
 import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import com.tejas.distributedmatchingengine.services.MatchingService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,7 @@ public class OrderController {
     }
 
     @PostMapping("/sell")
-    public ResponseEntity<String> placeSell(@RequestBody Order newSellOrder) {
+    public ResponseEntity<String> placeSell(@Valid @RequestBody Order newSellOrder) {
         logger.info("Received SELL order.");
         UserWallet wallet = userRepository.findUserByID(newSellOrder.getUserId())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
@@ -65,7 +66,7 @@ public class OrderController {
     }
 
     @PostMapping("/buy")
-    public ResponseEntity<String> placeBuy(@RequestBody Order newBuyOrder) {
+    public ResponseEntity<String> placeBuy(@Valid @RequestBody Order newBuyOrder) {
         logger.info("Received BUY order.");
         UserWallet wallet = userRepository.findUserByID(newBuyOrder.getUserId())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +

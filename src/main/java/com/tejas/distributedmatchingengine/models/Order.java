@@ -1,5 +1,6 @@
 package com.tejas.distributedmatchingengine.models;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,9 +18,13 @@ public class Order {
     private static final AtomicLong nextId = new AtomicLong(1);
 
     private long orderId;
+    @NotNull
     private String userId;
+    @NotNull
     private Type type;
+    @NotNull
     private BigDecimal price; // Single order so no mention of type. Price automatically means the per-share price
+    @NotNull
     private int quantity;
     private int remainingQuantity;
     private Instant timestamp;
