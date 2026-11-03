@@ -34,3 +34,11 @@ build/
 /src/test/java/com/tejas/distributedmatchingengine/TestsToDo.txt
 /src/main/java/todo.txt
 /src/main/java/ThreadGuidelines.txt
+
+Doubts.txt
+ThreadGuidelines.txt
+todo.txt
+TestsToDo.txt
+src/main/java/TempMatchService.txt
+src/main/java/TempTrxnRepo.txt
+src/main/java/tempOrderCtrl.txt
