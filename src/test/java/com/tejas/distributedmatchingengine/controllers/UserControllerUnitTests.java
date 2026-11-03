@@ -29,8 +29,6 @@ class UserControllerUnitTests {
     @Test
     @DisplayName("Test that the portfolio is displayed.")
     void getPortfolioHappyFlow() {
-        // Assumptions
-        // Set up selling user's wallet
         UserWallet sellingWallet = new UserWallet(BigDecimal.valueOf(100.00));
         String sellingWalletUserID = sellingWallet.getUserID();
         sellingWallet.addToTotalShares(20);
@@ -39,7 +37,7 @@ class UserControllerUnitTests {
         given(userRepository.findUserByID(sellingWalletUserID))
                 .willReturn(Optional.of(sellingWallet));
 
-        var portfolio = userController.getPortfolio(sellingWalletUserID);
+        var portfolio = userController.getWallet(sellingWalletUserID);
 
         assert portfolio.getBody() != null;
         assertEquals(sellingWallet.toString(), portfolio.getBody().toString());
@@ -53,7 +51,7 @@ class UserControllerUnitTests {
                 .willReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class,
-                () -> userController.getPortfolio("user123"));
+                () -> userController.getWallet("user123"));
     }
 
     @Test

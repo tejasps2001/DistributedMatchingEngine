@@ -20,8 +20,8 @@ public class SettlementService {
             Logger.getLogger(SettlementService.class.getName());
     private final ExecutorService settlementHandler;
 
-    // settlementHandler is injected here because the handler can be controlled
-    // in tests
+    // settlementHandler is injected here because it would allow the
+    // handler to be controlled in tests
     public SettlementService(UserRepository userRepository,
                              ExecutorService settlementHandler) {
         this.userRepository = userRepository;
@@ -65,7 +65,7 @@ public class SettlementService {
             wallet.addToAvailableShares(qtyFulfilled);
             wallet.addToTotalShares(qtyFulfilled);
             // Ignore the boolean return value since we know for sure that
-            // the funds are present
+            // the funds are present at this point of execution
             wallet.tryDeductFromTotalBalance(buyOrder.getPrice().multiply(
                     BigDecimal.valueOf(qtyFulfilled)));
 
@@ -80,14 +80,14 @@ public class SettlementService {
                 //      balance above and then add refund to available
                 //      balance here but it neither reduces the complexity
                 //      of the logic nor the number of lines. So, doing it
-                //      the way which makes the operations clearer.
+                //      in the way which makes the operations clearer.
                 wallet.addToAvailableBalance(refund);
                 wallet.addToTotalBalance(refund);
             }
         }
         // If for some reason, the status remains Status.NEW, log it here.
         else {
-            logger.info("Unexpected state while settling a BUY.");
+            logger.warning("Unexpected state while settling a BUY.");
         }
     }
 
@@ -124,7 +124,7 @@ public class SettlementService {
         }
         // If for some reason, the status remains Status.NEW, log it here.
         else {
-            logger.info("Unexpected state while settling a SELL.");
+            logger.warning("Unexpected state while settling a SELL.");
         }
     }
 

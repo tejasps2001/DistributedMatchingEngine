@@ -17,10 +17,10 @@ import java.util.Map;
 @RestControllerAdvice
 public class ExceptionControllerAdvice {
     /*
-    * Spring parses the JSON encoded Order objects using the Jackson library.
-    * If the incoming data is in the wrong format (for example, "buy" instead
-    * of "BUY" for the type enum), then this error is thrown by Spring. This
-    * exception handler informs the user to retry with the correct format.
+     * Spring parses the JSON encoded Order objects using the Jackson library.
+     * If the incoming data is in the wrong format (for example, "buy" instead
+     * of "BUY" for the type enum), then this exception is thrown by Spring. This
+     * exception handler informs the user to retry with the correct format.
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleJsonParsingError(
@@ -29,11 +29,10 @@ public class ExceptionControllerAdvice {
         String errorMsg = "error";
         // Jackson's InvalidFormatException is wrapped in
         // HttpMessageNotReadableException by Spring
-        if(e.getCause() instanceof InvalidFormatException invalidFormatE) {
+        if (e.getCause() instanceof InvalidFormatException invalidFormatE) {
             List<JacksonException.Reference> path = invalidFormatE.getPath();
 
-            // Get the field's name which was given the incorrectly formated
-            // input
+            // Get the field's name which has the incorrectly formatted input
             String fieldName = (path != null && !path.isEmpty()) ?
                     path.getLast().getPropertyName() : "unknown";
 
@@ -41,7 +40,7 @@ public class ExceptionControllerAdvice {
             Class<?> targetType = invalidFormatE.getTargetType();
 
             // List the allowed values if the field was of an Enum type
-            if(targetType != null && targetType.isEnum()) {
+            if (targetType != null && targetType.isEnum()) {
                 Object[] enumConstants = targetType.getEnumConstants();
 
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -61,7 +60,7 @@ public class ExceptionControllerAdvice {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(errorMsg, e.getMessage()));
         }
-        // For the cases where format is valid but the user input isn't
+        // For the cases where the format is valid but the user input isn't
         // readable for some other reason
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                 errorMsg, "Malformed JSON request body"
@@ -73,6 +72,6 @@ public class ExceptionControllerAdvice {
     public ResponseEntity<String> handleNonExistentUserError(
             UserNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()
-                        + " not found.");
+                + " not found.");
     }
 }

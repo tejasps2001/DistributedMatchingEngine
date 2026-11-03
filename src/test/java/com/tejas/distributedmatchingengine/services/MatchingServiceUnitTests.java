@@ -19,7 +19,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-// Using package-private access since JUnit 5 can run these tests using reflection
+// Using package-private access since it would allow JUnit 5 to run these
+// tests using reflection
 @ExtendWith(MockitoExtension.class)
 class MatchingServiceUnitTests {
     @Mock
@@ -31,7 +32,6 @@ class MatchingServiceUnitTests {
     @InjectMocks
     MatchingService matchingService;
 
-    // Matching BUY order
     @Test
     @DisplayName("Test that a BUY order is successfully matched with a SELL" +
             " order.")
@@ -187,7 +187,6 @@ class MatchingServiceUnitTests {
         verify(orderRepository).addBuyOrder(buyOrder);
     }
 
-    // Matching SELL order
     @Test
     @DisplayName("Test that a SELL order is successfully matched with a BUY" +
             " order.")
@@ -594,7 +593,8 @@ class MatchingServiceUnitTests {
         Order restingOrder1 = new Order("user1243",
                 Type.SELL, BigDecimal.valueOf(100.00), 10);
         // Add other unsuitable orders too to verify cross-edge is handled
-        // properly
+        // properly. Here, the SELL order with the lowest price
+        // (here, 100) must be matched.
         Order unsuitableRestingOrder2 = new Order("user1253",
                 Type.SELL, BigDecimal.valueOf(105.00), 10);
 
@@ -629,7 +629,8 @@ class MatchingServiceUnitTests {
         Order restingOrder1 = new Order("user1243",
                 Type.BUY, BigDecimal.valueOf(100.00), 10);
         // Add other unsuitable orders too to verify cross-edge is handled
-        // properly
+        // properly. Here, the BUY order with the highest price (here,
+        // 100) must be matched.
         Order unsuitableRestingOrder2 = new Order("user1253",
                 Type.BUY, BigDecimal.valueOf(95.00), 10);
 

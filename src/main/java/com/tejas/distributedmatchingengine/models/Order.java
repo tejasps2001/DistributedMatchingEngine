@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicLong;
 @Setter
 @EqualsAndHashCode
 public class Order {
-    // Use an atomic variable so that the incoming sequence is preserved
-    // correctly by the orderID
+    // Use an atomic variable so that the incoming sequence of orders
+    // is preserved correctly in the orderID
     private static final AtomicLong nextId = new AtomicLong(1);
 
     private long orderId;

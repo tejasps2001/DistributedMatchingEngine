@@ -36,7 +36,6 @@ public class UserRepository {
         return newUserWallet1.getUserID();
     }
 
-    // Will be replaced by Spring Data's built-in methods later
     public Optional<UserWallet> findUserByID(String userID) {
         UserWallet wallet = users.get(userID);
         return Optional.ofNullable(wallet);

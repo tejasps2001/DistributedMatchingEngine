@@ -24,8 +24,8 @@ import java.util.random.RandomGenerator;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Not using @SpringBootTest because new objects are needed for every
-// repetition. Therefore, have to create them in setUp() anyway. Because of
-// this, the tests also run faster.
+// repetition. Therefore, we have to create them in setUp() anyway.
+// Because of removing @SpringBootTest, the tests will also run faster.
 class MatchingEngineConcurrencyIntegrationTest {
     private OrderController orderController;
     private final String[] user = new String[10];
@@ -70,8 +70,9 @@ class MatchingEngineConcurrencyIntegrationTest {
                         settlementService, transactionRepository);
 
         // Need to pass all the above to a fresh orderController instead of
-        // using autowiring lest it will order book already present in the context
-        // (previous repetition's order books) which can have unfilled orders.
+        // using autowiring lest the order book already present in the context
+        // will be used (previous repetition's order books) which can have
+        // unfilled orders.
         orderController =
                 new OrderController(matchingService, userRepository);
 
@@ -79,18 +80,17 @@ class MatchingEngineConcurrencyIntegrationTest {
         for (int i = 0; i < 10; i++) {
             user[i] = userController.createNewUser(
                     10000000.00).getBody();
-            wallets[i] = userController.getPortfolio(user[i]).getBody();
+            wallets[i] = userController.getWallet(user[i]).getBody();
             assert wallets[i] != null;
             wallets[i].addToTotalShares(100000);
             wallets[i].addToAvailableShares(100000);
         }
 
-        // Sum of all the balances and shares initially
         initialTotalBalanceSum = new BigDecimal("100000000.00");
         initialTotalSharesSum = 100000 * 10;
 
         // Restricting half of the users to buyers and the other half to sellers
-        // to prevent the activation of self-trade prevention
+        // to prevent invoking the self-trade prevention policy.
         int i = 0;
         while (i < 500) {
             orders[i] = new Order(user[generator.nextInt(0, 5)],
@@ -156,9 +156,7 @@ class MatchingEngineConcurrencyIntegrationTest {
         }
         latch.countDown();
 
-        // Wait until the settlement executor is terminated. That indicates
-        // that all the orders have had a chance to get executed
-        // But first, the workers' shutdown() must be called because it should
+        // The workers' shutdown() must be called first because it should
         // call all the necessary settle() calls BEFORE the settlementHandler is
         // shutdown.
         try {
@@ -168,6 +166,8 @@ class MatchingEngineConcurrencyIntegrationTest {
                         "terminate correctly.");
             }
             settlementHandler.shutdown();
+            // Wait until the settlement executor is terminated. That indicates
+            // that all the orders have had a chance to get executed.
             if (settlementHandler.awaitTermination(
                     1, TimeUnit.MINUTES)) {
                 for (Map.Entry<Order, Future<ResponseEntity<String>>> result :
@@ -197,8 +197,8 @@ class MatchingEngineConcurrencyIntegrationTest {
                     assertTrue(wallet.getTotalShares() >= 0);
                     finalTotalSharesSum += wallet.getTotalShares();
 
-                    // for each wallet, totalBalance - availableBalance equals the
-                    // value locked in that user’s still-resting buy orders.
+                    // for each wallet, the totalBalance - availableBalance equals the
+                    // value locked in that user’s still-resting BUY orders.
                     // Likewise for shares and resting sells.
                     var moneyInEscrow = wallet.getTotalBalance().subtract(
                             wallet.getAvailableBalance());

@@ -21,7 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 
-// Using package-private access since JUnit 5 can run these tests using reflection
+// Using package-private access since it would allow JUnit 5 to run these
+// tests using reflection
 @ExtendWith(MockitoExtension.class)
 class OrderControllerUnitTests {
     @Mock
@@ -33,13 +34,10 @@ class OrderControllerUnitTests {
     @InjectMocks
     private OrderController orderController;
 
-    // Tests for the sell controller action
     @Test
     @DisplayName("Test whether a SELL order is successfully matched and fully" +
             " filled.")
     void sellOrderFullPlacementHappyFlow() {
-        // Assumptions
-        // Set up selling user's wallet
         UserWallet sellingWallet = new UserWallet(BigDecimal.valueOf(100.00));
         String sellingWalletUserID = sellingWallet.getUserID();
         sellingWallet.addToTotalShares(20);
@@ -54,10 +52,8 @@ class OrderControllerUnitTests {
         given(matchingService.matchSell(sellOrder))
                 .willReturn(Status.FILLED);
 
-        // Call/Executions
         var orderStatus = orderController.placeSell(sellOrder);
 
-        // Validations
         assertEquals("Order executed.", orderStatus.getBody());
     }
 
@@ -65,8 +61,6 @@ class OrderControllerUnitTests {
     @DisplayName("Test whether a SELL order is successfully matched and partially" +
             " filled.")
     void sellOrderPartialPlacementHappyFlow() {
-        // Assumptions
-        // Set up selling user's wallet
         UserWallet sellingWallet = new UserWallet(BigDecimal.valueOf(100.00));
         String sellingWalletUserID = sellingWallet.getUserID();
         sellingWallet.addToTotalShares(20);
@@ -81,10 +75,8 @@ class OrderControllerUnitTests {
         given(matchingService.matchSell(sellOrder))
                 .willReturn(Status.PARTIALLY_FILLED);
 
-        // Call/Executions
         var orderStatus = orderController.placeSell(sellOrder);
 
-        // Validations
         assertEquals(String.format("""
                         Filled %d shares.""",
                 sellOrder.getQuantity() - sellOrder.getRemainingQuantity()),
@@ -94,8 +86,6 @@ class OrderControllerUnitTests {
     @Test
     @DisplayName("Test whether a SELL order is not matched.")
     void sellOrderNoPlacementHappyFlow() {
-        // Assumptions
-        // Set up selling user's wallet
         UserWallet sellingWallet = new UserWallet(BigDecimal.valueOf(100.00));
         String sellingWalletUserID = sellingWallet.getUserID();
         sellingWallet.addToTotalShares(20);
@@ -110,10 +100,8 @@ class OrderControllerUnitTests {
         given(matchingService.matchSell(sellOrder))
                 .willReturn(Status.NEW);
 
-        // Call/Executions
         var orderStatus = orderController.placeSell(sellOrder);
 
-        // Validations
         assertEquals("Couldn't fill order. Added to order book.",
                 orderStatus.getBody());
     }
@@ -122,8 +110,6 @@ class OrderControllerUnitTests {
     @DisplayName("Test whether a SELL order is not matched when the user has " +
             "insufficient amount of shares")
     void sellOrderInsufficientShares() {
-        // Assumptions
-        // Set up selling user's wallet
         UserWallet sellingWallet = new UserWallet(BigDecimal.valueOf(100.00));
         String sellingWalletUserID = sellingWallet.getUserID();
         sellingWallet.addToTotalShares(20);
@@ -135,10 +121,8 @@ class OrderControllerUnitTests {
         Order sellOrder = new Order(sellingWalletUserID,
                 Type.SELL, BigDecimal.valueOf(24.00), 100);
 
-        // Call/Executions
         var orderStatus = orderController.placeSell(sellOrder);
 
-        // Validations
         assertEquals("Insufficient amount of shares!",
                 orderStatus.getBody());
     }
@@ -154,13 +138,10 @@ class OrderControllerUnitTests {
                 () -> orderController.placeSell(sellOrder));
     }
 
-    // Tests for the buy controller action
     @Test
     @DisplayName("Test whether a BUY order is successfully matched and fully" +
             " filled.")
     void buyOrderFullPlacementHappyFlow() {
-        // Assumptions
-        // Set up buying user's wallet
         UserWallet buyingWallet = new UserWallet(BigDecimal.valueOf(2500.00));
         String buyingWalletUserID = buyingWallet.getUserID();
 
@@ -173,10 +154,8 @@ class OrderControllerUnitTests {
         given(matchingService.matchBuy(buyOrder))
                 .willReturn(Status.FILLED);
 
-        // Call/Executions
         var orderStatus = orderController.placeBuy(buyOrder);
 
-        // Validations
         assertEquals("Order executed.", orderStatus.getBody());
     }
 
@@ -184,8 +163,6 @@ class OrderControllerUnitTests {
     @DisplayName("Test whether a BUY order is successfully matched and partially" +
             " filled.")
     void buyOrderPartialPlacementHappyFlow() {
-        // Assumptions
-        // Set up buying user's wallet
         UserWallet buyingWallet = new UserWallet(BigDecimal.valueOf(2500.00));
         String buyingWalletUserID = buyingWallet.getUserID();
 
@@ -198,10 +175,8 @@ class OrderControllerUnitTests {
         given(matchingService.matchBuy(buyOrder))
                 .willReturn(Status.PARTIALLY_FILLED);
 
-        // Call/Executions
         var orderStatus = orderController.placeBuy(buyOrder);
 
-        // Validations
         assertEquals(String.format("""
                         Bought %d shares.""",
                         buyOrder.getQuantity() - buyOrder.getRemainingQuantity()),
@@ -211,8 +186,6 @@ class OrderControllerUnitTests {
     @Test
     @DisplayName("Test whether a BUY order is not matched.")
     void buyOrderNoPlacementHappyFlow() {
-        // Assumptions
-        // Set up buying user's wallet
         UserWallet buyingWallet = new UserWallet(BigDecimal.valueOf(5000.00));
         String buyingWalletUserID = buyingWallet.getUserID();
 
@@ -225,10 +198,8 @@ class OrderControllerUnitTests {
         given(matchingService.matchBuy(buyOrder))
                 .willReturn(Status.NEW);
 
-        // Call/Executions
         var orderStatus = orderController.placeBuy(buyOrder);
 
-        // Validations
         assertEquals("Couldn't fill order. Added to order book.",
                 orderStatus.getBody());
     }
@@ -237,8 +208,6 @@ class OrderControllerUnitTests {
     @DisplayName("Test whether a BUY order is not matched when the user has " +
             "insufficient money.")
     void buyOrderInsufficientMoney() {
-        // Assumptions
-        // Set up buying user's wallet
         UserWallet buyingWallet = new UserWallet(BigDecimal.valueOf(100.00));
         String buyingWalletUserID = buyingWallet.getUserID();
 
@@ -248,10 +217,8 @@ class OrderControllerUnitTests {
         Order buyOrder = new Order(buyingWalletUserID,
                 Type.BUY, BigDecimal.valueOf(24.00), 10);
 
-        // Call/Executions
         var orderStatus = orderController.placeBuy(buyOrder);
 
-        // Validations
         assertEquals("Insufficient funds!", orderStatus.getBody());
     }
 
@@ -266,7 +233,6 @@ class OrderControllerUnitTests {
                 () -> orderController.placeSell(sellOrder));
     }
 
-    // Tests for the cancel controller action
     @Test
     @DisplayName("Test that the order is cancelled.")
     void orderCancellationHappyFlow() {
