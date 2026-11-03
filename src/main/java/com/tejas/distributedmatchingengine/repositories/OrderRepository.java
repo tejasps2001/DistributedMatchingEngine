@@ -60,31 +60,23 @@ public class OrderRepository {
         orderBook.put(newOrder.getPrice(), newQueue);
     }
 
-    public Optional<Boolean> cancelOrder(long orderID) {
+    public Order cancelOrder(long orderID) {
         for (Queue<Order> orderQueue : bidsBook.values()) {
             for (Order order : orderQueue) {
-                if(order.getOrderId() == orderID) {
-                    if (order.getStatus() == Status.NEW) {
-                        order.setStatus(Status.CANCELLED);
-                        return Optional.of(true);
-                    } else if (order.getStatus() == Status.PARTIALLY_FILLED) {
-                        return Optional.of(false);
-                    }
+                if(order.getOrderId() == orderID && order.getStatus() == Status.NEW) {
+                    order.setStatus(Status.CANCELLED);
+                    return order;
                 }
             }
         }
         for (Queue<Order> orderQueue : asksBook.values()) {
             for (Order order : orderQueue) {
-                if(order.getOrderId() == orderID) {
-                    if (order.getStatus() == Status.NEW) {
+                if(order.getOrderId() == orderID && order.getStatus() == Status.NEW) {
                         order.setStatus(Status.CANCELLED);
-                        return Optional.of(true);
-                    } else if (order.getStatus() == Status.PARTIALLY_FILLED) {
-                        return Optional.of(false);
+                        return order;
                     }
-                }
             }
         }
-        return Optional.empty();
+        return null;
     }
 }

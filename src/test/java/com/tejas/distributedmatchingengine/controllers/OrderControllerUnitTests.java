@@ -243,9 +243,9 @@ class OrderControllerUnitTests {
         Order cancelOrder = new Order("user132",
                 Type.SELL, BigDecimal.valueOf(24.00), 10);
         long orderID = cancelOrder.getOrderId();
-
+        cancelOrder.setStatus(Status.CANCELLED);
         given(orderRepository.cancelOrder(orderID))
-                .willReturn(Optional.of(true));
+                .willReturn(cancelOrder);
 
         var cancelStatus = orderController.cancelOrder(orderID);
 
@@ -259,9 +259,9 @@ class OrderControllerUnitTests {
         Order cancelOrder = new Order("user132",
                 Type.SELL, BigDecimal.valueOf(24.00), 10);
         long orderID = cancelOrder.getOrderId();
-
+        cancelOrder.setStatus(Status.FILLED);
         given(orderRepository.cancelOrder(orderID))
-                .willReturn(Optional.of(false));
+                .willReturn(cancelOrder);
 
         var cancelStatus = orderController.cancelOrder(orderID);
 

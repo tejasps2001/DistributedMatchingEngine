@@ -104,16 +104,17 @@ public class OrderController {
     @DeleteMapping("/cancel")
     public ResponseEntity<String> cancelOrder(@RequestParam long orderID) {
         logger.info("Received request for cancellation.");
-        var cancelStatus = orderRepository.cancelOrder(orderID);
-        return cancelStatus.map(status -> switch (status) {
-            case true -> ResponseEntity
+        var cancelledOrder = orderRepository.cancelOrder(orderID);
+        return switch (cancelledOrder.getStatus()) {
+            case Status.CANCELLED -> ResponseEntity
                     .status(HttpStatus.OK)
                     .body("Order cancelled.");
-            case false -> ResponseEntity
+            case Status.FILLED, Status.PARTIALLY_FILLED -> ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body("Couldn't cancel. Order already filled.");
-        }).orElseGet(() -> ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(String.format("Order with %d not found.", orderID)));
+            default -> ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(String.format("Order with %d not found.", orderID));
+        };
     }
 }
