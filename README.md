@@ -5,9 +5,13 @@
 [![JMH](https://img.shields.io/badge/Benchmarked%20with-JMH-blue.svg)](https://github.com/openjdk/jmh)
 [![k6](https://img.shields.io/badge/Load%20Tested%20with-k6-purple.svg)](https://k6.io/)
 
-A deterministic, low-latency price-time priority (FIFO) Limit Order Book (LOB) and double-entry escrow ledger engineered in Java 21 and Spring Boot 3[cite: 1, 7].
+A deterministic, low-latency price-time priority (FIFO) Limit Order Book (LOB) and
+double-entry escrow ledger engineered in Java 21 and Spring Boot 3.
 
-The engine implements a **single-writer matching core** decoupled from an **asynchronous settlement thread pool**, sustaining **~100,000 matches/sec** in memory with a **5.61 µs median latency**, and **1,000 HTTP req/sec** end-to-end through Spring MVC with zero errors.
+The engine implements a **single-writer matching core** decoupled from an
+**asynchronous settlement thread pool**, sustaining **~100,000 matches/sec**
+in memory with a **5.61 µs median latency**, and **1,000 HTTP req/sec** end-to-end 
+through Spring MVC with zero errors.
 
 ---
 
@@ -62,7 +66,7 @@ sequence.
 post-trade balance settlement and trade ledger auditing using a managed daemon
 worker pool.
 3. **Double-Entry Escrow Invariant:** Wallets enforce strict segregation between
-available and escrowed balances. Buy funds and sell shares are pre-allocated at
+available and escrow balances. Buy funds and sell shares are pre-allocated at
 order placement to prevent double-spending or negative balances.
 4. **Taker Price Improvement:** Aggressive limit orders sweeping deep resting
 orders execute at maker prices; the remaining surplus between reserved escrow 
@@ -75,11 +79,15 @@ the aggressive incoming order to prevent artificial volume generation.
 
 ## Verified Benchmarks
 
-The engine was evaluated at two layers: an **in-memory microbenchmark (JMH)** isolating the pure execution core, and a **macro-level load test (k6)** measuring the complete Spring MVC REST pipeline.
+The engine was evaluated at two layers: an **in-memory microbenchmark (JMH)**
+isolating the pure execution core, and a **macro-level load test (k6)** measuring
+the complete Spring MVC REST pipeline.
 
 ### 1. In-Memory Matching Core (JMH)
 
-Microbenchmarks were run on OpenJDK 25 (LTS) using continuous multi-level liquidity sweeps across multiple price tiers with compiler blackhole consumer isolation:
+Microbenchmarks were run on OpenJDK 25 (LTS) using continuous multi-level
+liquidity sweeps across multiple price tiers with compiler black hole consumer
+isolation:
 
 
 ```
@@ -92,19 +100,20 @@ MatchingEngineBenchmark.aggressiveBuySweep sample    401,171      9.777  ±     
 
 #### Latency Percentiles (Pure In-Memory Matching)
 
-| Percentile | Latency | Evaluation Context |
-| :--- | :--- | :--- |
-| **p50 (Median)** | **5.61 µs** | Half of all multi-level matches clear in ~5.6 microseconds. |
-| **p90** | **8.06 µs** | 90% of order sweeps complete under 9 microseconds. |
-| **p95** | **13.57 µs** | High-percentile boundary under continuous load. |
-| **p99** | **103.04 µs** | Tail distribution including task queuing. |
-| **p100 (Max)** | **21.92 ms** | Lowest recorded STW young-generation GC safepoint pause. |
+| Percentile       | Latency       | Evaluation Context                                          |
+|:-----------------|:--------------|:------------------------------------------------------------|
+| **p50 (Median)** | **5.61 µs**   | Half of all multi-level matches clear in ~5.6 microseconds. |
+| **p90**          | **8.06 µs**   | 90% of order sweeps complete under 9 microseconds.          |
+| **p95**          | **13.57 µs**  | High-percentile boundary under continuous load.             |
+| **p99**          | **103.04 µs** | Tail distribution including task queuing.                   |
+| **p100 (Max)**   | **21.92 ms**  | Lowest recorded STW young-generation GC safepoint pause.    |
 
 ---
 
 ### 2. Full-Stack End-to-End Load Test (k6)
 
-Macro load testing executed a sustained arrival rate of **1,000 HTTP orders/sec** across 50 concurrent Tomcat workers over a 30-second measurement window:
+Macro load testing executed a sustained arrival rate of **1,000 HTTP orders/sec**
+across 50 concurrent Tomcat workers over a 30-second measurement window:
 
 
 ```
@@ -115,13 +124,13 @@ Checks Succeeded: 100.00% (29,806 out of 29,806 valid status assertions)
 
 ```
 
-| Metric | Result | Target SLA | Status |
-| :--- | :--- | :--- | :--- |
-| **Throughput** | **987.6 req/sec** | 1,000 req/sec | **Passed** |
-| **Median Duration (p50)** | **988.91 µs** | < 10.0 ms | **Passed (< 1 ms)** |
-| **p95 Duration** | **2.58 ms** | < 50.0 ms | **Passed** |
-| **p99 Duration** | **22.54 ms** | < 150.0 ms | **Passed** |
-| **Error Rate** | **0.00%** | < 1.00% | **Passed (Zero Failures)** |
+| Metric                    | Result            | Target SLA    | Status                     |
+|:--------------------------|:------------------|:--------------|:---------------------------|
+| **Throughput**            | **987.6 req/sec** | 1,000 req/sec | **Passed**                 |
+| **Median Duration (p50)** | **988.91 µs**     | < 10.0 ms     | **Passed (< 1 ms)**        |
+| **p95 Duration**          | **2.58 ms**       | < 50.0 ms     | **Passed**                 |
+| **p99 Duration**          | **22.54 ms**      | < 150.0 ms    | **Passed**                 |
+| **Error Rate**            | **0.00%**         | < 1.00%       | **Passed (Zero Failures)** |
 
 ---
 
@@ -166,8 +175,9 @@ the unique `userId`.
 #### HTTP Response Codes
 
 * `200 OK`: Order fully filled or partially filled.
-* `202 ACCEPTED`: Order could not be immediately matched; added to the Limit Order Book as a resting order.
-* `409 CONFLICT`: Order cancelled due to Self-Trade Prevention (STP).
+* `202 ACCEPTED`: Order could not be immediately matched; added to the Limit Order
+Book as a resting order.
+* `409 CONFLICT`: Order canceled due to Self-Trade Prevention (STP).
 * `422 UNPROCESSABLE ENTITY`: Insufficient available wallet balance or shares.
 * `400 BAD REQUEST`: Invalid enum format or missing mandatory fields.
 
@@ -187,7 +197,8 @@ the unique `userId`.
 * [ ] **Milestone 2: Relational Persistence & ACID Guarantees (In Progress)**
 * PostgreSQL persistence for historical ledgers and trade settlement.
 
-* Pessimistic locking (`SELECT ... FOR UPDATE`) to prevent concurrent wallet double-spends.
+* Pessimistic locking (`SELECT ... FOR UPDATE`) to prevent concurrent wallet
+double-spends.
 
 * Flyway automated database migration pipelines.
 
