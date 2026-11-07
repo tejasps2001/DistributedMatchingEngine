@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MatchAndSettleIntegrationTest {
     private OrderController orderController;
     private OrderRepository orderRepository;
-    private UserRepository userRepository;
     private ExecutorService settlementHandler;
     private TransactionRepository transactionRepository;
 
@@ -40,7 +39,7 @@ class MatchAndSettleIntegrationTest {
     @BeforeEach
     void setUp() {
         settlementHandler = Executors.newFixedThreadPool(8);
-        userRepository = new UserRepository();
+        UserRepository userRepository = new UserRepository();
         UserController userController = new UserController(userRepository);
         transactionRepository = new TransactionRepository();
         SettlementService settlementService = new SettlementService(userRepository, settlementHandler);
