@@ -165,37 +165,44 @@ class MatchAndSettleIntegrationTest {
     }
 
     @Test
-    @DisplayName("Cancelling a resting limit buy order must restore escrow back to available balance")
-    void cancelOrderShouldReleaseEscrowBackToAvailableBalance() {
-        String buyingUserId = userRepository.addUser(BigDecimal.valueOf(1000.00));
-        String sellingUserId = userRepository.addUserWithShares(BigDecimal.valueOf(1000.00), 10);
+    @DisplayName("Cancelling a resting limit buy order must restore escrow back" +
+            " to available balance.")
+    void cancelOrderReleaseEscrowBackToAvailableBalance()
+            throws InterruptedException {
         // Order to be canceled
-        Order buyOrder = new Order(buyingUserId, Type.BUY, new BigDecimal("100.00"), 5);
+        Order buyOrder = new Order(newBuyingUser, Type.BUY, new BigDecimal(
+                "10.00"), 5);
         // Order that triggers the removal of the above canceled BUY order
-        Order sellOrder = new Order(sellingUserId, Type.SELL, new BigDecimal("100.00"), 5);
+        // An order that gets canceled is not immediately settled. It is
+        // settled when the matching thread tries to match with an order sees
+        // the status of the order (Status.CANCELLED) and removes it from the
+        // order queue. Hence, using another order to trigger the matching
+        // process.
+        Order sellOrder = new Order(newSellingUser, Type.SELL, new BigDecimal(
+                "10.00"), 5);
 
         orderController.placeBuy(buyOrder);
 
-        UserWallet wallet = userRepository.findUserByID(buyingUserId).orElseThrow();
-        assertEquals(0, wallet.getAvailableBalance().compareTo(BigDecimal.valueOf(500.00)));
-        assertEquals(0, wallet.getTotalBalance().compareTo(BigDecimal.valueOf(1000.00)));
+        assertEquals(0, buyerWallet.getAvailableBalance()
+                .compareTo(BigDecimal.valueOf(190.00)));
+        assertEquals(0, buyerWallet.getTotalBalance()
+                .compareTo(BigDecimal.valueOf(240.00)));
         // Verify that the buyOrder is in the bidsBook
-        assertTrue(orderRepository.getBidsBook().get(buyOrder.getPrice()).contains(buyOrder));
+        assertTrue(orderRepository.getBidsBook().get(buyOrder.getPrice())
+                .contains(buyOrder));
 
         var cancelStatus =  orderController.cancelOrder(buyOrder.getOrderId());
         assertEquals("Order cancelled.", cancelStatus.getBody());
         assertEquals(Status.CANCELLED, buyOrder.getStatus());
 
-        // Verify the canceled order leads to restoration of the wallet balance
+        // Verify the canceled order leads to restoration of the buyerWallet
+        // balance
         orderController.placeSell(sellOrder);
         settlementHandler.shutdown();
-        try {
-            settlementHandler.awaitTermination(30, TimeUnit.SECONDS);
-            assertEquals(0, wallet.getAvailableBalance()
-                    .compareTo(BigDecimal.valueOf(1000.00)));
-        } catch(InterruptedException e) {
-            e.printStackTrace();
-        }
+        assertTrue(settlementHandler.awaitTermination(
+                30, TimeUnit.SECONDS));
+        assertEquals(0, buyerWallet.getAvailableBalance()
+                .compareTo(BigDecimal.valueOf(240.00)));
 
     }
 }
