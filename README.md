@@ -2,6 +2,7 @@
 
 [![Java 21](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.org/projects/jdk/21/)
 [![Spring Boot 3](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![CI](https://github.com/tejasps2001/DistributedMatchingEngine/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tejasps2001/DistributedMatchingEngine/actions/workflows/ci.yml)
 [![JMH](https://img.shields.io/badge/Benchmarked%20with-JMH-blue.svg)](https://github.com/openjdk/jmh)
 [![k6](https://img.shields.io/badge/Load%20Tested%20with-k6-purple.svg)](https://k6.io/)
 
