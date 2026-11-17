@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 // 2 modes => 1 fork for each benchmark mode
 @BenchmarkMode({Mode.SampleTime, Mode.Throughput})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Warmup(iterations = 3, time = 2, timeUnit = TimeUnit.SECONDS) // Warm up C2 JIT compiler
+@Warmup(iterations = 3, time = 2, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 @State(Scope.Thread)
@@ -39,7 +39,6 @@ public class MatchingEngineBenchmark {
     // Fixed prices and quantities to avoid creation of BigDecimal objects in hot loop
     private static final BigDecimal PRICE_100 = BigDecimal.valueOf(100.00);
     private static final BigDecimal PRICE_102 = BigDecimal.valueOf(102.00);
-    private static final BigDecimal PRICE_105 = BigDecimal.valueOf(105.00);
     private static final BigDecimal PRICE_110 = BigDecimal.valueOf(110.00);
 
     @Setup(Level.Trial)
@@ -72,8 +71,8 @@ public class MatchingEngineBenchmark {
 
         // Pre-create buyer and seller once with large balances
         // Avoids creating 500,000 User objects during the iteration
-        sellerUserId = userRepository.addUserWithShares(BigDecimal.valueOf(10_000_000.00), 10_000_000);
-        buyerUserId = userRepository.addUser(BigDecimal.valueOf(10_000_000.00));
+        sellerUserId = userRepository.addUserWithShares(BigDecimal.valueOf(0.0), Integer.MAX_VALUE);
+        buyerUserId = userRepository.addUser(BigDecimal.valueOf(1e12));
     }
 
     @TearDown(Level.Iteration)
