@@ -4,6 +4,7 @@ import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
+import lombok.Getter;
 import org.springframework.stereotype.Service;
 import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 
@@ -36,15 +37,9 @@ public class MatchingService {
     // Noting the transactionID in the matching thread itself allows for
     // the proper sequence of transactions.
     private static final AtomicLong nextTransactionID = new AtomicLong(1);
-    // Use a daemon thread for the transactionRecorder so an idle transaction queue
-    // consumer does not hold the JVM process alive after application/test shutdown.
-    private static final ExecutorService transactionRecorder =
-            Executors.newFixedThreadPool(8, r -> {
-                Thread t = new Thread(r);
-                t.setDaemon(true);
-                t.setName("transaction-recorder");
-                return t;
-            });
+    @Getter
+    private static ExecutorService transactionRecorder =
+            Executors.newSingleThreadExecutor();
 
     static {
         buyQueue = new ConcurrentLinkedQueue<>();
@@ -57,6 +52,16 @@ public class MatchingService {
         this.orderRepository = orderRepository;
         this.settlementService = settlementService;
         this.transactionRepository = transactionRepository;
+    }
+
+    // Replace with a daemon executor for the matching engine benchmark
+    static void newDaemonTransactionRecorder() {
+        transactionRecorder = Executors.newSingleThreadExecutor(runnable -> {
+            Thread thread = new Thread(runnable);
+            thread.setDaemon(true);
+            thread.setName("transaction-recorder");
+            return thread;
+        });
     }
 
     /**

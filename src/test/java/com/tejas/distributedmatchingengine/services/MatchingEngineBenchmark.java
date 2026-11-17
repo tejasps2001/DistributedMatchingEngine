@@ -66,6 +66,7 @@ public class MatchingEngineBenchmark {
                 new TreeMap<>(Comparator.reverseOrder()),
                 new TreeMap<>(Comparator.naturalOrder())
         );
+        MatchingService.newDaemonTransactionRecorder();
         matchingService = new MatchingService(orderRepository,
                 settlementService, transactionRepository);
 
@@ -81,6 +82,7 @@ public class MatchingEngineBenchmark {
         if (settlementHandler != null) {
             settlementHandler.shutdownNow();
         }
+        MatchingService.getTransactionRecorder().shutdownNow();
     }
 
     @Benchmark
