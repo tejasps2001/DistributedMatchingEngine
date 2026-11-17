@@ -36,6 +36,7 @@ public class MatchingService {
     // transactionRecorder executor first.
     // Noting the transactionID in the matching thread itself allows for
     // the proper sequence of transactions.
+    @Getter
     private static final AtomicLong nextTransactionID = new AtomicLong(1);
     @Getter
     private static ExecutorService transactionRecorder =

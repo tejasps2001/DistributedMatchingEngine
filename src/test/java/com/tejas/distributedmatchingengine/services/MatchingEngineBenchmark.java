@@ -79,6 +79,13 @@ public class MatchingEngineBenchmark {
     @TearDown(Level.Iteration)
     public void tearDownIteration() {
         // Prevent leaking thread pools across iterations
+        long currTransactionCount = MatchingService.getNextTransactionID().longValue() - prevTransactionCount;
+        // Sanity check that the number of successful matches equal the invocation count
+        System.out.printf("Successful Matches = %d Invocations = %d%n",
+                (currTransactionCount - 1) / 2, invocations);
+        invocations = 0L;
+        prevTransactionCount += currTransactionCount;
+
         if (settlementHandler != null) {
             settlementHandler.shutdownNow();
         }
@@ -87,6 +94,7 @@ public class MatchingEngineBenchmark {
 
     @Benchmark
     public void benchmarkAggressiveBuySweep(Blackhole bh) {
+        invocations++;
         // 1. Replenish two price levels of asks (10 shares @ 100, 15 shares @ 102) = 25 shares total
         Order askLevel1 = new Order(sellerUserId, Type.SELL, PRICE_100, 10);
         Order askLevel2 = new Order(sellerUserId, Type.SELL, PRICE_102, 15);
