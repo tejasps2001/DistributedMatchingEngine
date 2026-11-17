@@ -107,10 +107,9 @@ public class MatchingEngineBenchmark {
         bh.consume(matchingService.matchBuy(aggressiveBuy));
     }
 
-    @Test
-    void runBenchmarks() throws Exception {
+    static void main() throws Exception {
         Options opt = new OptionsBuilder()
-                .include(this.getClass().getName())
+                .include(MatchingEngineBenchmark.class.getName())
                 .shouldFailOnError(true)
                 .build();
 
