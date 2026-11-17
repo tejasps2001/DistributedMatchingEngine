@@ -71,6 +71,7 @@ public class MatchingEngineBenchmark {
 
         // Pre-create buyer and seller once with large balances
         // Avoids creating 500,000 User objects during the iteration
+        // reducing GC pressure
         sellerUserId = userRepository.addUserWithShares(BigDecimal.valueOf(0.0), Integer.MAX_VALUE);
         buyerUserId = userRepository.addUser(BigDecimal.valueOf(1e12));
     }
