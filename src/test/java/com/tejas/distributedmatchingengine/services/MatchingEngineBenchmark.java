@@ -1,11 +1,11 @@
-package com.tejas.distributedmatchingengine.repositories;
+package com.tejas.distributedmatchingengine.services;
 
 import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Type;
-import com.tejas.distributedmatchingengine.services.MatchingService;
-import com.tejas.distributedmatchingengine.services.SettlementService;
-import org.junit.jupiter.api.Test;
+import com.tejas.distributedmatchingengine.repositories.OrderRepository;
+import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
+import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
@@ -78,7 +78,6 @@ public class MatchingEngineBenchmark {
 
     @TearDown(Level.Iteration)
     public void tearDownIteration() {
-        // Prevent leaking thread pools across iterations
         long currTransactionCount = MatchingService.getNextTransactionID().longValue() - prevTransactionCount;
         // Sanity check that the number of successful matches equal the invocation count
         System.out.printf("Successful Matches = %d Invocations = %d%n",
@@ -86,6 +85,8 @@ public class MatchingEngineBenchmark {
         invocations = 0L;
         prevTransactionCount += currTransactionCount;
 
+        // Prevent leaking thread pools across iterations since live threads
+        // of a pool are GC roots
         if (settlementHandler != null) {
             settlementHandler.shutdownNow();
         }
