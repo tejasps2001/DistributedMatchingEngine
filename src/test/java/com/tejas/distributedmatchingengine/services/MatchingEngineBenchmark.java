@@ -1,7 +1,6 @@
 package com.tejas.distributedmatchingengine.services;
 
 import com.tejas.distributedmatchingengine.models.Order;
-import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
@@ -13,14 +12,14 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-@BenchmarkMode({Mode.SampleTime, Mode.Throughput}) // SampleTime records percentile distributions
+// SampleTime gets the p50, p95, etc. latencies
+// 2 modes => 1 fork for each benchmark mode
+@BenchmarkMode({Mode.SampleTime, Mode.Throughput})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = 3, time = 2, timeUnit = TimeUnit.SECONDS) // Warm up C2 JIT compiler
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
@@ -34,7 +33,10 @@ public class MatchingEngineBenchmark {
     private String sellerUserId;
     private String buyerUserId;
 
-    // Fixed prices and quantities to avoid BigDecimal instantiation in hot loop
+    private long prevTransactionCount = 0;
+    private long invocations;
+
+    // Fixed prices and quantities to avoid creation of BigDecimal objects in hot loop
     private static final BigDecimal PRICE_100 = BigDecimal.valueOf(100.00);
     private static final BigDecimal PRICE_102 = BigDecimal.valueOf(102.00);
     private static final BigDecimal PRICE_105 = BigDecimal.valueOf(105.00);
@@ -42,9 +44,10 @@ public class MatchingEngineBenchmark {
 
     @Setup(Level.Trial)
     public void setupTrial() {
-        // Mute JUL loggers to prevent console bottlenecks during benchmarking
+        // Tune Logger's interference to minimum to prevent pollution of the
+        // benchmark scores
         Logger.getLogger("com.tejas.distributedmatchingengine")
-                .setLevel(java.util.logging.Level.SEVERE);
+                .setLevel(java.util.logging.Level.OFF);
     }
 
     @Setup(Level.Iteration)
@@ -62,10 +65,7 @@ public class MatchingEngineBenchmark {
 
         // Create new order books in each test run so that new test runs
         // don't match orders with the orders in the old books.
-        OrderRepository orderRepository = new OrderRepository(
-                new TreeMap<>(Comparator.reverseOrder()),
-                new TreeMap<>(Comparator.naturalOrder())
-        );
+        OrderRepository orderRepository = new OrderRepository();
         MatchingService.newDaemonTransactionRecorder();
         matchingService = new MatchingService(orderRepository,
                 settlementService, transactionRepository);
