@@ -43,34 +43,36 @@ public class MatchingEngineBenchmark {
 
     @Setup(Level.Trial)
     public void setupTrial() {
-        // Tune Logger's interference to minimum to prevent pollution of the
-        // benchmark scores
+        // Turn off logging to prevent pollution of the benchmark scores
         Logger.getLogger("com.tejas.distributedmatchingengine")
                 .setLevel(java.util.logging.Level.OFF);
     }
 
     @Setup(Level.Iteration)
     public void setup() {
-        // Custom ThreadFactory marking workers as DAEMON
+        // Use daemon threads to allow the JVM to exit when settlement
+        // is still being executed (since only the matching thread is
+        // being benchmarked).
         settlementHandler = Executors.newFixedThreadPool(8, runnable -> {
             Thread thread = new Thread(runnable);
             thread.setDaemon(true);
             thread.setName("settlement-worker");
             return thread;
         });
+        MatchingService.newDaemonTransactionRecorder();
+
         UserRepository userRepository = new UserRepository();
         TransactionRepository transactionRepository = new TransactionRepository();
         SettlementService settlementService = new SettlementService(userRepository, settlementHandler);
 
-        // Create new order books in each test run so that new test runs
-        // don't match orders with the orders in the old books.
+        // Create new order books in each iteration so that orders in the
+        // next iteration don't match orders with the orders in the old books.
         OrderRepository orderRepository = new OrderRepository();
-        MatchingService.newDaemonTransactionRecorder();
         matchingService = new MatchingService(orderRepository,
                 settlementService, transactionRepository);
 
         // Pre-create buyer and seller once with large balances
-        // Avoids creating 500,000 User objects during the iteration
+        // This avoids creating a lot of UserWallet objects during the iteration
         // reducing GC pressure
         sellerUserId = userRepository.addUserWithShares(BigDecimal.valueOf(0.0), Integer.MAX_VALUE);
         buyerUserId = userRepository.addUser(BigDecimal.valueOf(1e12));
@@ -96,13 +98,12 @@ public class MatchingEngineBenchmark {
     @Benchmark
     public void benchmarkAggressiveBuySweep(Blackhole bh) {
         invocations++;
-        // 1. Replenish two price levels of asks (10 shares @ 100, 15 shares @ 102) = 25 shares total
+
         Order askLevel1 = new Order(sellerUserId, Type.SELL, PRICE_100, 10);
         Order askLevel2 = new Order(sellerUserId, Type.SELL, PRICE_102, 15);
         matchingService.matchSell(askLevel1);
         matchingService.matchSell(askLevel2);
 
-        // 2. Aggressive taker buy sweeps both levels completely (10 @ 100, 15 @ 102)
         Order aggressiveBuy = new Order(buyerUserId, Type.BUY, PRICE_110, 25);
 
         bh.consume(matchingService.matchBuy(aggressiveBuy));
