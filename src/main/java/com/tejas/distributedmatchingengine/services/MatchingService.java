@@ -133,12 +133,10 @@ public class MatchingService {
             // the order book
             if (newOrder.getType() == Type.BUY &&
                     suitableOrders.getKey().compareTo(newOrder.getPrice()) > 0) {
-                newOrder.setStatus(Status.PARTIALLY_FILLED);
                 return;
             }
             if (newOrder.getType() == Type.SELL &&
                     suitableOrders.getKey().compareTo(newOrder.getPrice()) < 0) {
-                newOrder.setStatus(Status.PARTIALLY_FILLED);
                 return;
             }
             var orderQueue = suitableOrders.getValue();
