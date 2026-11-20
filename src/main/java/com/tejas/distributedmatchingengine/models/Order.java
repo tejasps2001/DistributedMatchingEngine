@@ -23,7 +23,7 @@ public class Order {
     @NotNull
     private Type type;
     @NotNull
-    private BigDecimal price; // Single order so no mention of type. Price automatically means the per-share price
+    private BigDecimal price; // Price automatically means the per-share price
     @NotNull
     private int quantity;
     private int remainingQuantity;
