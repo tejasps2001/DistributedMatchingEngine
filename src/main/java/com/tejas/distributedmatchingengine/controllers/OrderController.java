@@ -105,6 +105,11 @@ public class OrderController {
     public ResponseEntity<String> cancelOrder(@RequestParam long orderID) {
         logger.info("Received request for cancellation.");
         var cancelledOrder = orderRepository.cancelOrder(orderID);
+        if (cancelledOrder == null) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(String.format("Order with %d not found.", orderID));
+        }
         return switch (cancelledOrder.getStatus()) {
             case Status.CANCELLED -> ResponseEntity
                     .status(HttpStatus.OK)
@@ -113,8 +118,8 @@ public class OrderController {
                     .status(HttpStatus.CONFLICT)
                     .body("Couldn't cancel. Order already filled.");
             default -> ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(String.format("Order with %d not found.", orderID));
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unexpected order status.");
         };
     }
 }
