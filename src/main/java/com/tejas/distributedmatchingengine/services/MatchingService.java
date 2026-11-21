@@ -121,6 +121,13 @@ public class MatchingService {
         return newOrder.getStatus();
     }
 
+    // Route cancellation through the matching thread since the thread-unsafe
+    // order books need to be accessed. Only the matching thread accesses and
+    // modifies the order books.
+    public synchronized Status cancelOrder(long orderID) {
+        return orderRepository.cancelOrder(orderID);
+    }
+
     public void matchOrders(Order newOrder,
                             SortedMap<BigDecimal,
                                     Queue<Order>> suitableOrdersMap) {

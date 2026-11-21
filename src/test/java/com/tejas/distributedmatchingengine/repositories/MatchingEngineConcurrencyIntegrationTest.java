@@ -75,7 +75,7 @@ class MatchingEngineConcurrencyIntegrationTest {
         // unfilled orders.
         orderController =
                 new OrderController(matchingService,
-                        userRepository, orderRepository);
+                        userRepository);
 
         // Large balances and shares so there are no insufficient asset errors
         for (int i = 0; i < 10; i++) {

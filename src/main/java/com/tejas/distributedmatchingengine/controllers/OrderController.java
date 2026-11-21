@@ -4,7 +4,6 @@ import com.tejas.distributedmatchingengine.exceptions.UserNotFoundException;
 import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.UserWallet;
-import com.tejas.distributedmatchingengine.repositories.OrderRepository;
 import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import com.tejas.distributedmatchingengine.services.MatchingService;
 import jakarta.validation.Valid;
@@ -22,13 +21,11 @@ public class OrderController {
 
     private static final Logger logger = Logger.getLogger(
             OrderController.class.getName());
-    private final OrderRepository orderRepository;
 
     public OrderController(MatchingService matchingService,
-                           UserRepository userRepository, OrderRepository orderRepository) {
+                           UserRepository userRepository) {
         this.matchingService = matchingService;
         this.userRepository = userRepository;
-        this.orderRepository = orderRepository;
     }
 
     @PostMapping("/sell")
@@ -104,13 +101,13 @@ public class OrderController {
     @DeleteMapping("/cancel")
     public ResponseEntity<String> cancelOrder(@RequestParam long orderID) {
         logger.info("Received request for cancellation.");
-        var cancelledOrder = orderRepository.cancelOrder(orderID);
-        if (cancelledOrder == null) {
+        var cancelledOrderStatus = matchingService.cancelOrder(orderID);
+        if (cancelledOrderStatus == null) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(String.format("Order with %d not found.", orderID));
         }
-        return switch (cancelledOrder.getStatus()) {
+        return switch (cancelledOrderStatus) {
             case Status.CANCELLED -> ResponseEntity
                     .status(HttpStatus.OK)
                     .body("Order cancelled.");

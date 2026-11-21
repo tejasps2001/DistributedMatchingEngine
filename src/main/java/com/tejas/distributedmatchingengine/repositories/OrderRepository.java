@@ -4,6 +4,7 @@ import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ public class OrderRepository {
     private final SortedMap<BigDecimal, Queue<Order>> bidsBook;
     private final SortedMap<BigDecimal, Queue<Order>> asksBook;
 
+    @Autowired
     public OrderRepository() {
         bidsBook = new TreeMap<>(Comparator.reverseOrder());
         asksBook = new TreeMap<>(Comparator.naturalOrder());
@@ -60,21 +62,21 @@ public class OrderRepository {
         orderBook.put(newOrder.getPrice(), newQueue);
     }
 
-    public Order cancelOrder(long orderID) {
+    public Status cancelOrder(long orderID) {
         for (Queue<Order> orderQueue : bidsBook.values()) {
             for (Order order : orderQueue) {
-                if(order.getOrderId() == orderID && order.getStatus() == Status.NEW) {
+                if (order.getOrderId() == orderID && order.getStatus() == Status.NEW) {
                     order.setStatus(Status.CANCELLED);
-                    return order;
+                    return order.getStatus();
                 }
             }
         }
         for (Queue<Order> orderQueue : asksBook.values()) {
             for (Order order : orderQueue) {
-                if(order.getOrderId() == orderID && order.getStatus() == Status.NEW) {
-                        order.setStatus(Status.CANCELLED);
-                        return order;
-                    }
+                if (order.getOrderId() == orderID && order.getStatus() == Status.NEW) {
+                    order.setStatus(Status.CANCELLED);
+                    return order.getStatus();
+                }
             }
         }
         return null;

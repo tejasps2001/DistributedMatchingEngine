@@ -59,7 +59,7 @@ class MatchAndSettleIntegrationTest {
         // unfilled orders.
         orderController =
                 new OrderController(matchingService,
-                        userRepository, orderRepository);
+                        userRepository);
 
         newBuyingUser = userController.createNewUser(240.00).getBody();
         newSellingUser = userController.createNewUser(0).getBody();
