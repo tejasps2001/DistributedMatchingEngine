@@ -1,12 +1,12 @@
 package com.tejas.distributedmatchingengine.models;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Getter
@@ -18,13 +18,9 @@ public class Order {
     private static final AtomicLong nextId = new AtomicLong(1);
 
     private long orderId;
-    @NotNull(message = "UserID must not be null")
     private String userId;
-    @NotNull(message = "Order type must not be null")
     private Type type;
-    @NotNull(message = "Order price must not be null")
-    private BigDecimal price; // Price automatically means the per-share price
-    @NotNull(message = "Order quantity must not be null")
+    private BigDecimal price; // Price automatically means the per-share
     private int quantity;
     private int remainingQuantity;
     private Instant timestamp;
@@ -35,11 +31,14 @@ public class Order {
                  BigDecimal price,
                  int quantity) {
         this.orderId = nextId.getAndIncrement();
-        this.userId = userId;
-        this.type = type;
+        this.userId = Objects.requireNonNull(userId,
+                "UserID must not be null");
+        this.type = Objects.requireNonNull(type,
+                "Order type must not be null");
         this.timestamp = Instant.now();
         this.status = Status.NEW;
 
+        Objects.requireNonNull(price, "Order price must not be null");
         if (price.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Price must be a non-zero " +
                     "positive value.");

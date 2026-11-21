@@ -58,7 +58,7 @@ public class ExceptionControllerAdvice {
             ));
         } else if (e.getCause() instanceof ValueInstantiationException) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of(errorMsg, e.getMessage()));
+                    .body(Map.of(errorMsg, e.getCause().getCause().getMessage()));
         }
         // For the cases where the format is valid but the user input isn't
         // readable for some other reason
