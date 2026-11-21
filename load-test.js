@@ -22,8 +22,8 @@ const BASE_URL = 'http://localhost:8080';
 // Create 20 users with huge balance and shares
 export function setup() {
     const users = [];
-    const initialBalance = 100000000.00;
-    const initialShares = 10000000;
+    const initialBalance = 100_000_000.00;
+    const initialShares = 10_000_000;
 
     for (let i = 0; i < 20; i++) {
         const url = `${BASE_URL}/createUserWithShares?balance=${initialBalance}&shares=${initialShares}`;
@@ -53,9 +53,12 @@ export default function loadTest (data) {
     const isBuy = randomNo <= 9;
 
     const endpoint = isBuy ? `${BASE_URL}/buy` : `${BASE_URL}/sell`;
-    const price = (100 + Math.floor(Math.random() * 10)).toFixed(2);
-    const side = isBuy ? 'BUY' : 'SELL';
+    // Price range: 100.00 to 109.00
+    const price = (100 + Math.floor(Math.random() * 10))
+        .toFixed(2);
+    // Quantity range: 1 to 5
     const quantity = Math.floor(Math.random() * 5) + 1;
+    const side = isBuy ? 'BUY' : 'SELL';
 
     const payload = JSON.stringify({
         userId: userId,
