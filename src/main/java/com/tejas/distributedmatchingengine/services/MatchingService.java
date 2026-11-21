@@ -168,7 +168,7 @@ public class MatchingService {
                 if (Objects.equals(order.getUserId(), newOrder.getUserId())) {
                     newOrder.setStatus(Status.CANCELLED);
                     settlementService.settleCancellation(newOrder);
-                    continue;
+                    return;
                 }
                 String msg = String.format("\n%s is suitable for the" +
                                 " incoming %s.", order.toCompactString(),
