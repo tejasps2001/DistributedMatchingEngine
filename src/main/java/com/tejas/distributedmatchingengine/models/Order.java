@@ -18,13 +18,13 @@ public class Order {
     private static final AtomicLong nextId = new AtomicLong(1);
 
     private long orderId;
-    @NotNull
+    @NotNull(message = "UserID must not be null")
     private String userId;
-    @NotNull
+    @NotNull(message = "Order type must not be null")
     private Type type;
-    @NotNull
+    @NotNull(message = "Order price must not be null")
     private BigDecimal price; // Price automatically means the per-share price
-    @NotNull
+    @NotNull(message = "Order quantity must not be null")
     private int quantity;
     private int remainingQuantity;
     private Instant timestamp;
