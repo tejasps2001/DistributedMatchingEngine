@@ -8,7 +8,7 @@ export const options = {
             rate: 1000,
             timeUnit: '1s',
             duration: '30s',
-            preAllocatedVUs: 50
+            preAllocatedVUs: 75
         },
     },
     thresholds: {
