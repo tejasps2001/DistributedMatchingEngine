@@ -8,8 +8,7 @@ export const options = {
             rate: 1000,
             timeUnit: '1s',
             duration: '30s',
-            preAllocatedVUs: 50,      // Pre-allocated concurrent Tomcat client connections
-            maxVUs: 200,
+            preAllocatedVUs: 50
         },
     },
     thresholds: {
@@ -44,12 +43,14 @@ export function setup() {
     return { users: users };
 }
 
-// 2. VU Execution Loop
-export default function (data) {
-    // Randomly select one of the pre-funded users
-    const userId = data.users[Math.floor(Math.random() * data.users.length)];
-    const isBuy = Math.random() > 0.5;
 export default function loadTest (data) {
+    // Randomly select one of the users
+    const randomNo = Math.floor(Math.random() * data.users.length)
+    const userId = data.users[randomNo];
+
+    // Segregate the users into buyers and sellers to prevent triggering
+    // STP.
+    const isBuy = randomNo <= 9;
 
     const endpoint = isBuy ? `${BASE_URL}/buy` : `${BASE_URL}/sell`;
     const price = (100 + Math.floor(Math.random() * 10)).toFixed(2);
