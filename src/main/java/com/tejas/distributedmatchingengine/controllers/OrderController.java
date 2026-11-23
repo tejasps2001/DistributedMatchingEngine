@@ -1,8 +1,11 @@
 package com.tejas.distributedmatchingengine.controllers;
 
+import com.tejas.distributedmatchingengine.DTOs.OrderMatchResponse;
+import com.tejas.distributedmatchingengine.DTOs.PlaceOrderRequest;
 import com.tejas.distributedmatchingengine.exceptions.UserNotFoundException;
 import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
+import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.models.UserWallet;
 import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import com.tejas.distributedmatchingengine.services.MatchingService;
@@ -29,26 +32,32 @@ public class OrderController {
     }
 
     @PostMapping("/sell")
-    public ResponseEntity<String> placeSell(@Valid @RequestBody Order newSellOrder) {
+    public ResponseEntity<String> placeSell(@Valid @RequestBody PlaceOrderRequest req) {
         logger.info("Received SELL order.");
+        Order newSellOrder = new Order(req.userID(), Type.SELL, req.price(), req.quantity());
         UserWallet wallet = userRepository.findUserByID(newSellOrder.getUserId())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
                         " userID:" + newSellOrder.getUserId()));
         // Check if the user contains the required amount of shares
         if (wallet.tryDeductFromAvailableShares(newSellOrder.getQuantity())) {
             wallet.addOrderToWallet(newSellOrder);
-            Status matchStatus = matchingService.matchSell(newSellOrder);
-            return switch (matchStatus) {
+            OrderMatchResponse matchResult = matchingService.matchSell(newSellOrder);
+            return switch (matchResult.status()) {
                 case Status.NEW -> ResponseEntity
                         .status(HttpStatus.ACCEPTED)
+                        .header("orderID",
+                                String.valueOf(newSellOrder.getOrderId()))
                         .body("Couldn't fill order. Added to order book.");
                 case Status.PARTIALLY_FILLED -> ResponseEntity
                         .status(HttpStatus.OK)
+                        .header("orderID",
+                                String.valueOf(newSellOrder.getOrderId()))
                         .body(String.format("Filled %d shares.",
-                                newSellOrder.getQuantity() -
-                                        newSellOrder.getRemainingQuantity()));
+                                matchResult.filledQuantity()));
                 case Status.FILLED -> ResponseEntity
                         .status(HttpStatus.OK)
+                        .header("orderID",
+                                String.valueOf(newSellOrder.getOrderId()))
                         .body("Order executed.");
                 case Status.CANCELLED -> ResponseEntity
                         .status(HttpStatus.CONFLICT)
@@ -63,8 +72,9 @@ public class OrderController {
     }
 
     @PostMapping("/buy")
-    public ResponseEntity<String> placeBuy(@Valid @RequestBody Order newBuyOrder) {
+    public ResponseEntity<String> placeBuy(@Valid @RequestBody PlaceOrderRequest req) {
         logger.info("Received BUY order.");
+        Order newBuyOrder = new Order(req.userID(), Type.BUY, req.price(), req.quantity());
         UserWallet wallet = userRepository.findUserByID(newBuyOrder.getUserId())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
                         " userID:" + newBuyOrder.getUserId()));
@@ -73,18 +83,23 @@ public class OrderController {
                 BigDecimal.valueOf(newBuyOrder.getQuantity())
         ))) {
             wallet.addOrderToWallet(newBuyOrder);
-            Status matchStatus = matchingService.matchBuy(newBuyOrder);
-            return switch (matchStatus) {
+            OrderMatchResponse matchResult = matchingService.matchBuy(newBuyOrder);
+            return switch (matchResult.status()) {
                 case Status.NEW -> ResponseEntity
                         .status(HttpStatus.ACCEPTED)
+                        .header("orderID",
+                                String.valueOf(newBuyOrder.getOrderId()))
                         .body("Couldn't fill order. Added to order book.");
                 case Status.PARTIALLY_FILLED -> ResponseEntity
                         .status(HttpStatus.OK)
+                        .header("orderID",
+                                String.valueOf(newBuyOrder.getOrderId()))
                         .body(String.format("Bought %d shares.",
-                                newBuyOrder.getQuantity() - newBuyOrder
-                                        .getRemainingQuantity()));
+                                matchResult.filledQuantity()));
                 case Status.FILLED -> ResponseEntity
                         .status(HttpStatus.OK)
+                        .header("orderID",
+                                String.valueOf(newBuyOrder.getOrderId()))
                         .body("Order executed.");
                 case Status.CANCELLED -> ResponseEntity
                         .status(HttpStatus.CONFLICT)

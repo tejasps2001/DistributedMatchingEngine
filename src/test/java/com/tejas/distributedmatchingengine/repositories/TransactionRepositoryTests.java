@@ -36,12 +36,13 @@ class TransactionRepositoryTests {
 
         assertTrue(transactions.isEmpty());
 
-        transactionRepository.addTransaction(1L,
+        transactionRepository.addTransaction(
+                new Transaction(1L,
                 Instant.now(),
                 sellOrder.getOrderId(),
                 buyOrder.getOrderId(),
                 BigDecimal.valueOf(20),
-                20);
+                20));
 
         assertFalse(transactions.isEmpty());
     }

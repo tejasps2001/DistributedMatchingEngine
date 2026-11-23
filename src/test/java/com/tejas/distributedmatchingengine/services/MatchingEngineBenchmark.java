@@ -59,7 +59,6 @@ public class MatchingEngineBenchmark {
             thread.setName("settlement-worker");
             return thread;
         });
-        MatchingService.newDaemonTransactionRecorder();
 
         UserRepository userRepository = new UserRepository();
         TransactionRepository transactionRepository = new TransactionRepository();
@@ -92,7 +91,6 @@ public class MatchingEngineBenchmark {
         if (settlementHandler != null) {
             settlementHandler.shutdownNow();
         }
-        MatchingService.getTransactionRecorder().shutdownNow();
     }
 
     @Benchmark

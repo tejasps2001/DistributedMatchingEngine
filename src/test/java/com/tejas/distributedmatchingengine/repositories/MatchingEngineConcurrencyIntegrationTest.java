@@ -2,6 +2,7 @@
 // OrderRepository constructor
 package com.tejas.distributedmatchingengine.repositories;
 
+import com.tejas.distributedmatchingengine.DTOs.PlaceOrderRequest;
 import com.tejas.distributedmatchingengine.controllers.OrderController;
 import com.tejas.distributedmatchingengine.controllers.UserController;
 import com.tejas.distributedmatchingengine.models.Order;
@@ -28,8 +29,9 @@ import static org.junit.jupiter.api.Assertions.*;
 // Because of removing @SpringBootTest, the tests will also run faster.
 class MatchingEngineConcurrencyIntegrationTest {
     private OrderController orderController;
+    private UserRepository userRepository;
     private final String[] user = new String[10];
-    private final Order[] orders = new Order[500];
+    private final PlaceOrderRequest[] orders = new PlaceOrderRequest[500];
     private final UserWallet[] wallets = new UserWallet[10];
 
     private final RandomGenerator generator = new Random();
@@ -53,7 +55,7 @@ class MatchingEngineConcurrencyIntegrationTest {
         // before each test run
         workers = Executors.newFixedThreadPool(20);
         settlementHandler = Executors.newFixedThreadPool(8);
-        UserRepository userRepository = new UserRepository();
+        userRepository = new UserRepository();
         UserController userController = new UserController(userRepository);
         TransactionRepository transactionRepository = new TransactionRepository();
         SettlementService settlementService =
@@ -93,24 +95,24 @@ class MatchingEngineConcurrencyIntegrationTest {
         // Restricting half of the users to buyers and the other half to sellers
         // to prevent invoking the self-trade prevention policy.
         int i = 0;
-        while (i < 500) {
-            orders[i] = new Order(user[generator.nextInt(0, 5)],
-                    Type.BUY,
+        while (i < 250) {
+            orders[i] = new PlaceOrderRequest(user[generator.nextInt(0, 5)],
                     BigDecimal.valueOf(generator.nextDouble(
                             9.00, 11.00)),
                     generator.nextInt(10, 21)
 
             );
-            totalQuantity += orders[i].getQuantity();
+            totalQuantity += orders[i].quantity();
 
             i++;
-            orders[i] = new Order(user[generator.nextInt(5, 10)],
-                    Type.SELL,
+        }
+        while (i < 500) {
+            orders[i] = new PlaceOrderRequest(user[generator.nextInt(5, 10)],
                     BigDecimal.valueOf(generator.nextDouble(
                             9.00, 11.00)),
                     generator.nextInt(10, 21)
             );
-            totalQuantity += orders[i].getQuantity();
+            totalQuantity += orders[i].quantity();
             i++;
         }
 
@@ -128,7 +130,7 @@ class MatchingEngineConcurrencyIntegrationTest {
             " exceptions, no negative wallets.")
     void concurrentOrdersConserveTotalBalanceAndShares() {
         CountDownLatch latch = new CountDownLatch(1);
-        var allOrderResults = new HashMap<Order, Future<ResponseEntity<String>>>();
+        var allOrderResults = new HashMap<PlaceOrderRequest, Future<ResponseEntity<String>>>();
         BigDecimal finalTotalBalanceSum =
                 new BigDecimal("0.0");
 
@@ -140,7 +142,7 @@ class MatchingEngineConcurrencyIntegrationTest {
                 ResponseEntity<String> orderResult;
                 try {
                     latch.await();
-                    if(orders[i].getType() == Type.BUY)
+                    if (i < 250)
                         orderResult = orderController.placeBuy(orders[i]);
                     else
                         orderResult = orderController.placeSell(orders[i]);
@@ -171,15 +173,25 @@ class MatchingEngineConcurrencyIntegrationTest {
             // that all the orders have had a chance to get executed.
             if (settlementHandler.awaitTermination(
                     1, TimeUnit.MINUTES)) {
-                for (Map.Entry<Order, Future<ResponseEntity<String>>> result :
+                for (Map.Entry<PlaceOrderRequest, Future<ResponseEntity<String>>> result :
                         allOrderResults.entrySet()) {
                     assertDoesNotThrow(() -> {
                         var response = result.getValue().get();
+                        var orderRequest = result.getKey();
+                        var orderID = Long.parseLong(
+                                Objects.requireNonNull(
+                                        response.getHeaders().getFirst(
+                                        "orderID")));
+                        var userID = orderRequest.userID();
+                        var wallet = userRepository.findUserByID(userID).get();
+                        var order = wallet.getOrderList().stream().
+                                filter(o -> o.getOrderId() == orderID)
+                                .findFirst().get();
                         assertTrue(response.getStatusCode().is2xxSuccessful());
-                        unfilledQuantity += result.getKey().getRemainingQuantity();
+                        unfilledQuantity += order.getRemainingQuantity();
                         filledQuantity +=
-                                (result.getKey().getQuantity() -
-                                        result.getKey().getRemainingQuantity());
+                                (order.getQuantity() -
+                                        order.getRemainingQuantity());
                     });
                 }
 

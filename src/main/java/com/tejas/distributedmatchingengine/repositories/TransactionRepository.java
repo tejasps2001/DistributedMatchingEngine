@@ -4,8 +4,6 @@ import com.tejas.distributedmatchingengine.models.Transaction;
 import lombok.Getter;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.concurrent.*;
 
 @Repository
@@ -26,19 +24,7 @@ public class TransactionRepository {
         this.transactionsLedger = transactionsLedger;
     }
 
-    public void addTransaction(long transactionID,
-                               Instant executionTime,
-                               long restingOrderID,
-                               long incomingOrderID,
-                               BigDecimal executionPrice,
-                               int qtyFulfilled) {
-        Transaction newTransaction = new Transaction(
-                transactionID,
-                executionTime,
-                restingOrderID,
-                incomingOrderID,
-                executionPrice,
-                qtyFulfilled);
-        transactionsLedger.put(transactionID, newTransaction);
+    public void addTransaction(Transaction newTransaction) {
+        transactionsLedger.put(newTransaction.transactionID(), newTransaction);
     }
 }

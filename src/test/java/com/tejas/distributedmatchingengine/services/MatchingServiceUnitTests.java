@@ -4,6 +4,7 @@ import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.repositories.OrderRepository;
+import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +30,9 @@ class MatchingServiceUnitTests {
     @Mock
     SettlementService settlementService;
 
+    @Mock
+    TransactionRepository transactionRepository;
+
     @InjectMocks
     MatchingService matchingService;
 
@@ -52,7 +56,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getAsksBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchBuy(buyOrder);
+        Status orderStatus = matchingService.matchBuy(buyOrder).status();
 
         assertEquals(Status.FILLED, orderStatus);
     }
@@ -83,7 +87,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getAsksBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchBuy(buyOrder);
+        Status orderStatus = matchingService.matchBuy(buyOrder).status();
 
         assertEquals(Status.FILLED, orderStatus);
     }
@@ -108,7 +112,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getAsksBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchBuy(buyOrder);
+        Status orderStatus = matchingService.matchBuy(buyOrder).status();
 
         assertEquals(Status.PARTIALLY_FILLED, orderStatus);
     }
@@ -137,7 +141,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getAsksBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchBuy(buyOrder);
+        Status orderStatus = matchingService.matchBuy(buyOrder).status();
 
         assertEquals(Status.PARTIALLY_FILLED, orderStatus);
     }
@@ -159,7 +163,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getAsksBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchBuy(buyOrder);
+        Status orderStatus = matchingService.matchBuy(buyOrder).status();
 
         assertEquals(Status.NEW, orderStatus);
 
@@ -180,7 +184,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getAsksBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchBuy(buyOrder);
+        Status orderStatus = matchingService.matchBuy(buyOrder).status();
 
         assertEquals(Status.NEW, orderStatus);
 
@@ -207,7 +211,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getBidsBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchSell(sellOrder);
+        Status orderStatus = matchingService.matchSell(sellOrder).status();
 
         assertEquals(Status.FILLED, orderStatus);
     }
@@ -238,7 +242,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getBidsBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchSell(sellOrder);
+        Status orderStatus = matchingService.matchSell(sellOrder).status();
 
         assertEquals(Status.FILLED, orderStatus);
     }
@@ -263,7 +267,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getBidsBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchSell(sellOrder);
+        Status orderStatus = matchingService.matchSell(sellOrder).status();
 
         assertEquals(Status.PARTIALLY_FILLED, orderStatus);
     }
@@ -292,7 +296,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getBidsBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchSell(sellOrder);
+        Status orderStatus = matchingService.matchSell(sellOrder).status();
 
         assertEquals(Status.PARTIALLY_FILLED, orderStatus);
     }
@@ -314,7 +318,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getBidsBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchSell(sellOrder);
+        Status orderStatus = matchingService.matchSell(sellOrder).status();
 
         assertEquals(Status.NEW, orderStatus);
 
@@ -335,7 +339,7 @@ class MatchingServiceUnitTests {
         given(orderRepository.getBidsBook())
                 .willReturn(orderBook);
 
-        Status orderStatus = matchingService.matchSell(sellOrder);
+        Status orderStatus = matchingService.matchSell(sellOrder).status();
 
         assertEquals(Status.NEW, orderStatus);
 

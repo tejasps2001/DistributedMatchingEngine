@@ -1,11 +1,9 @@
 package com.tejas.distributedmatchingengine.controllers;
 
+import com.tejas.distributedmatchingengine.DTOs.OrderMatchResponse;
+import com.tejas.distributedmatchingengine.DTOs.PlaceOrderRequest;
 import com.tejas.distributedmatchingengine.exceptions.UserNotFoundException;
-import com.tejas.distributedmatchingengine.models.Order;
-import com.tejas.distributedmatchingengine.models.Status;
-import com.tejas.distributedmatchingengine.models.Type;
-import com.tejas.distributedmatchingengine.models.UserWallet;
-import com.tejas.distributedmatchingengine.repositories.OrderRepository;
+import com.tejas.distributedmatchingengine.models.*;
 import com.tejas.distributedmatchingengine.repositories.UserRepository;
 import com.tejas.distributedmatchingengine.services.MatchingService;
 import org.junit.jupiter.api.DisplayName;
@@ -16,10 +14,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 // Using package-private access since it would allow JUnit 5 to run these
@@ -32,11 +33,10 @@ class OrderControllerUnitTests {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private OrderRepository orderRepository;
-
     @InjectMocks
     private OrderController orderController;
+
+    BigDecimal orderPrice = BigDecimal.valueOf(24.00);
 
     @Test
     @DisplayName("Test whether a SELL order is successfully matched and fully" +
@@ -50,13 +50,19 @@ class OrderControllerUnitTests {
         given(userRepository.findUserByID(sellingWalletUserID))
                 .willReturn(Optional.of(sellingWallet));
 
-        Order sellOrder = new Order(sellingWalletUserID,
-                Type.SELL, BigDecimal.valueOf(24.00), 10);
+        // 'matches' can be null since it is not the focus of the test
+        OrderMatchResponse response = new OrderMatchResponse(
+                Status.FILLED,
+                null);
 
-        given(matchingService.matchSell(sellOrder))
-                .willReturn(Status.FILLED);
+        given(matchingService.matchSell(any()))
+                .willReturn(response);
 
-        var orderStatus = orderController.placeSell(sellOrder);
+        PlaceOrderRequest sellOrderDTO = new PlaceOrderRequest(
+                sellingWalletUserID, orderPrice, 10
+        );
+
+        var orderStatus = orderController.placeSell(sellOrderDTO);
 
         assertEquals("Order executed.", orderStatus.getBody());
     }
@@ -73,18 +79,26 @@ class OrderControllerUnitTests {
         given(userRepository.findUserByID(sellingWalletUserID))
                 .willReturn(Optional.of(sellingWallet));
 
-        Order sellOrder = new Order(sellingWalletUserID,
-                Type.SELL, BigDecimal.valueOf(24.00), 10);
+        // 'matches' can be null since it is not the focus of the test
+        OrderMatchResponse response = new OrderMatchResponse(
+                Status.PARTIALLY_FILLED,
+                List.of(new Transaction(1,
+                        Instant.now(),
+                        1,
+                        2,
+                        BigDecimal.ZERO,
+                        5)));
 
-        given(matchingService.matchSell(sellOrder))
-                .willReturn(Status.PARTIALLY_FILLED);
+        given(matchingService.matchSell(any()))
+                .willReturn(response);
 
-        var orderStatus = orderController.placeSell(sellOrder);
+        PlaceOrderRequest sellOrderDTO = new PlaceOrderRequest(
+                sellingWalletUserID, orderPrice, 10
+        );
 
-        assertEquals(String.format("""
-                        Filled %d shares.""",
-                sellOrder.getQuantity() - sellOrder.getRemainingQuantity()),
-                orderStatus.getBody());
+        var orderStatus = orderController.placeSell(sellOrderDTO);
+
+        assertEquals("Filled 5 shares.", orderStatus.getBody());
     }
 
     @Test
@@ -98,13 +112,19 @@ class OrderControllerUnitTests {
         given(userRepository.findUserByID(sellingWalletUserID))
                 .willReturn(Optional.of(sellingWallet));
 
-        Order sellOrder = new Order(sellingWalletUserID,
-                Type.SELL, BigDecimal.valueOf(24.00), 10);
+        // 'matches' can be null since it is not the focus of the test
+        OrderMatchResponse response = new OrderMatchResponse(
+                Status.NEW,
+                null);
 
-        given(matchingService.matchSell(sellOrder))
-                .willReturn(Status.NEW);
+        given(matchingService.matchSell(any()))
+                .willReturn(response);
 
-        var orderStatus = orderController.placeSell(sellOrder);
+        PlaceOrderRequest sellOrderDTO = new PlaceOrderRequest(
+                sellingWalletUserID, orderPrice, 10
+        );
+
+        var orderStatus = orderController.placeSell(sellOrderDTO);
 
         assertEquals("Couldn't fill order. Added to order book.",
                 orderStatus.getBody());
@@ -122,10 +142,11 @@ class OrderControllerUnitTests {
         given(userRepository.findUserByID(sellingWalletUserID))
                 .willReturn(Optional.of(sellingWallet));
 
-        Order sellOrder = new Order(sellingWalletUserID,
-                Type.SELL, BigDecimal.valueOf(24.00), 100);
+        PlaceOrderRequest sellOrderDTO = new PlaceOrderRequest(
+                sellingWalletUserID, orderPrice, 100
+        );
 
-        var orderStatus = orderController.placeSell(sellOrder);
+        var orderStatus = orderController.placeSell(sellOrderDTO);
 
         assertEquals("Insufficient amount of shares!",
                 orderStatus.getBody());
@@ -133,13 +154,14 @@ class OrderControllerUnitTests {
 
     @Test
     @DisplayName("Test whether an exception is thrown when there is no entry for" +
-            "the userID in the UserRespository.")
+            "the userID in the UserRepository.")
     void sellingUserDoesNotExist() {
-        Order sellOrder = new Order("user132",
-                Type.SELL, BigDecimal.valueOf(24.00), 10);
+        PlaceOrderRequest sellOrderDTO = new PlaceOrderRequest(
+                "user132", orderPrice, 10
+        );
 
         assertThrows(UserNotFoundException.class,
-                () -> orderController.placeSell(sellOrder));
+                () -> orderController.placeSell(sellOrderDTO));
     }
 
     @Test
@@ -152,13 +174,19 @@ class OrderControllerUnitTests {
         given(userRepository.findUserByID(buyingWalletUserID))
                 .willReturn(Optional.of(buyingWallet));
 
-        Order buyOrder = new Order(buyingWalletUserID,
-                Type.BUY, BigDecimal.valueOf(24.00), 10);
+        // 'matches' can be null since it is not the focus of the test
+        OrderMatchResponse response = new OrderMatchResponse(
+                Status.FILLED,
+                null);
 
-        given(matchingService.matchBuy(buyOrder))
-                .willReturn(Status.FILLED);
+        given(matchingService.matchBuy(any()))
+                .willReturn(response);
 
-        var orderStatus = orderController.placeBuy(buyOrder);
+        PlaceOrderRequest buyOrderDTO = new PlaceOrderRequest(
+                buyingWalletUserID, orderPrice, 10
+        );
+
+        var orderStatus = orderController.placeBuy(buyOrderDTO);
 
         assertEquals("Order executed.", orderStatus.getBody());
     }
@@ -173,18 +201,25 @@ class OrderControllerUnitTests {
         given(userRepository.findUserByID(buyingWalletUserID))
                 .willReturn(Optional.of(buyingWallet));
 
-        Order buyOrder = new Order(buyingWalletUserID,
-                Type.BUY, BigDecimal.valueOf(24.00), 10);
+        OrderMatchResponse response = new OrderMatchResponse(
+                Status.PARTIALLY_FILLED,
+                List.of(new Transaction(1,
+                        Instant.now(),
+                        1,
+                        2,
+                        BigDecimal.ZERO,
+                        5)));
 
-        given(matchingService.matchBuy(buyOrder))
-                .willReturn(Status.PARTIALLY_FILLED);
+        given(matchingService.matchBuy(any()))
+                .willReturn(response);
 
-        var orderStatus = orderController.placeBuy(buyOrder);
+        PlaceOrderRequest buyOrderDTO = new PlaceOrderRequest(
+                buyingWalletUserID, orderPrice, 10
+        );
 
-        assertEquals(String.format("""
-                        Bought %d shares.""",
-                        buyOrder.getQuantity() - buyOrder.getRemainingQuantity()),
-                orderStatus.getBody());
+        var orderStatus = orderController.placeBuy(buyOrderDTO);
+
+        assertEquals("Bought 5 shares.", orderStatus.getBody());
     }
 
     @Test
@@ -196,13 +231,19 @@ class OrderControllerUnitTests {
         given(userRepository.findUserByID(buyingWalletUserID))
                 .willReturn(Optional.of(buyingWallet));
 
-        Order buyOrder = new Order(buyingWalletUserID,
-                Type.BUY, BigDecimal.valueOf(24.00), 10);
+        // 'matches' can be null since it is not the focus of the test
+        OrderMatchResponse response = new OrderMatchResponse(
+                Status.NEW,
+                null);
 
-        given(matchingService.matchBuy(buyOrder))
-                .willReturn(Status.NEW);
+        given(matchingService.matchBuy(any()))
+                .willReturn(response);
 
-        var orderStatus = orderController.placeBuy(buyOrder);
+        PlaceOrderRequest buyOrderDTO = new PlaceOrderRequest(
+                buyingWalletUserID, orderPrice, 10
+        );
+
+        var orderStatus = orderController.placeBuy(buyOrderDTO);
 
         assertEquals("Couldn't fill order. Added to order book.",
                 orderStatus.getBody());
@@ -218,30 +259,32 @@ class OrderControllerUnitTests {
         given(userRepository.findUserByID(buyingWalletUserID))
                 .willReturn(Optional.of(buyingWallet));
 
-        Order buyOrder = new Order(buyingWalletUserID,
-                Type.BUY, BigDecimal.valueOf(24.00), 10);
+        PlaceOrderRequest buyOrderDTO = new PlaceOrderRequest(
+                buyingWalletUserID, orderPrice, 10
+        );
 
-        var orderStatus = orderController.placeBuy(buyOrder);
+        var orderStatus = orderController.placeBuy(buyOrderDTO);
 
         assertEquals("Insufficient funds!", orderStatus.getBody());
     }
 
     @Test
     @DisplayName("Test whether an exception is thrown when there is no entry for" +
-            "the userID in the UserRespository.")
+            "the userID in the UserRepository.")
     void buyingUserDoesNotExist() {
-        Order sellOrder = new Order("user132",
-                Type.BUY, BigDecimal.valueOf(24.00), 10);
+        PlaceOrderRequest buyOrderDTO = new PlaceOrderRequest(
+                "user132", orderPrice, 10
+        );
 
         assertThrows(UserNotFoundException.class,
-                () -> orderController.placeSell(sellOrder));
+                () -> orderController.placeBuy(buyOrderDTO));
     }
 
     @Test
     @DisplayName("Test that the order is cancelled.")
     void orderCancellationHappyFlow() {
         Order cancelOrder = new Order("user132",
-                Type.SELL, BigDecimal.valueOf(24.00), 10);
+                Type.SELL, orderPrice, 10);
         long orderID = cancelOrder.getOrderId();
         cancelOrder.setStatus(Status.CANCELLED);
         given(matchingService.cancelOrder(orderID))
@@ -257,7 +300,7 @@ class OrderControllerUnitTests {
             " filled.")
     void orderCancellationDeniedAlreadyFilled() {
         Order cancelOrder = new Order("user132",
-                Type.SELL, BigDecimal.valueOf(24.00), 10);
+                Type.SELL, orderPrice, 10);
         long orderID = cancelOrder.getOrderId();
         cancelOrder.setStatus(Status.FILLED);
         given(matchingService.cancelOrder(orderID))

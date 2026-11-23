@@ -1,5 +1,6 @@
 package com.tejas.distributedmatchingengine.repositories;
 
+import com.tejas.distributedmatchingengine.DTOs.PlaceOrderRequest;
 import com.tejas.distributedmatchingengine.controllers.OrderController;
 import com.tejas.distributedmatchingengine.controllers.UserController;
 import com.tejas.distributedmatchingengine.models.Order;
@@ -74,18 +75,25 @@ class MatchAndSettleIntegrationTest {
     @Test
     void matchAndSettleWithBuyerPriceImprovement() {
         // Resting sell
-        Order sellOrder = new Order(newSellingUser,
-                Type.SELL, BigDecimal.valueOf(10.00), 20);
+        PlaceOrderRequest sellOrderDTO = new PlaceOrderRequest(
+                newSellingUser, BigDecimal.valueOf(10.00), 20
+        );
         // Incoming aggressive buy
-        Order buyOrder = new Order(newBuyingUser,
-                Type.BUY, BigDecimal.valueOf(12.00), 20);
+        PlaceOrderRequest buyOrderDTO = new PlaceOrderRequest(
+                newBuyingUser, BigDecimal.valueOf(12.00), 20
+        );
 
-        var orderStatus = orderController.placeSell(sellOrder);
+        var orderStatus = orderController.placeSell(sellOrderDTO);
         assertEquals("Couldn't fill order. Added to order book.",
                 orderStatus.getBody());
+
+        var sellOrder = sellerWallet.getOrderList().getFirst();
+
         assertEquals(Status.NEW, sellOrder.getStatus());
 
-        orderStatus = orderController.placeBuy(buyOrder);
+        orderStatus = orderController.placeBuy(buyOrderDTO);
+        var buyOrder = buyerWallet.getOrderList().getFirst();
+
         assertEquals("Order executed.", orderStatus.getBody());
         assertEquals(Status.FILLED, buyOrder.getStatus());
         assertEquals(Status.FILLED, sellOrder.getStatus());
@@ -120,18 +128,25 @@ class MatchAndSettleIntegrationTest {
     @Test
     void matchAndSettleWithSellerPriceImprovement() {
         // Incoming aggressive sell
-        Order sellOrder = new Order(newSellingUser,
-                Type.SELL, BigDecimal.valueOf(10.00), 20);
+        PlaceOrderRequest sellOrderDTO = new PlaceOrderRequest(
+                newSellingUser, BigDecimal.valueOf(10.00), 20
+        );
         // Resting buy
-        Order buyOrder = new Order(newBuyingUser,
-                Type.BUY, BigDecimal.valueOf(12.00), 20);
+        PlaceOrderRequest buyOrderDTO = new PlaceOrderRequest(
+                newBuyingUser, BigDecimal.valueOf(12.00), 20
+        );
 
-        var orderStatus = orderController.placeBuy(buyOrder);
+        var orderStatus = orderController.placeBuy(buyOrderDTO);
         assertEquals("Couldn't fill order. Added to order book.",
                 orderStatus.getBody());
+
+        var buyOrder = buyerWallet.getOrderList().getFirst();
+
         assertEquals(Status.NEW, buyOrder.getStatus());
 
-        orderStatus = orderController.placeSell(sellOrder);
+        orderStatus = orderController.placeSell(sellOrderDTO);
+        var sellOrder = sellerWallet.getOrderList().getFirst();
+
         assertEquals("Order executed.", orderStatus.getBody());
         assertEquals(Status.FILLED, buyOrder.getStatus());
         assertEquals(Status.FILLED, sellOrder.getStatus());
@@ -169,18 +184,22 @@ class MatchAndSettleIntegrationTest {
     void cancelOrderReleaseEscrowBackToAvailableBalance()
             throws InterruptedException {
         // Order to be canceled
-        Order buyOrder = new Order(newBuyingUser, Type.BUY, new BigDecimal(
-                "10.00"), 5);
+        PlaceOrderRequest buyOrderDTO = new PlaceOrderRequest(
+                newBuyingUser, BigDecimal.valueOf(10.00), 5
+        );
         // Order that triggers the removal of the above canceled BUY order
         // An order that gets canceled is not immediately settled. It is
         // settled when the matching thread tries to match with an order sees
         // the status of the order (Status.CANCELLED) and removes it from the
         // order queue. Hence, using another order to trigger the matching
         // process.
-        Order sellOrder = new Order(newSellingUser, Type.SELL, new BigDecimal(
-                "10.00"), 5);
+        PlaceOrderRequest sellOrderDTO = new PlaceOrderRequest(
+                newSellingUser, BigDecimal.valueOf(10.00), 5
+        );
 
-        orderController.placeBuy(buyOrder);
+        orderController.placeBuy(buyOrderDTO);
+
+        var buyOrder = buyerWallet.getOrderList().getFirst();
 
         assertEquals(0, buyerWallet.getAvailableBalance()
                 .compareTo(BigDecimal.valueOf(190.00)));
@@ -196,7 +215,7 @@ class MatchAndSettleIntegrationTest {
 
         // Verify the canceled order leads to restoration of the buyerWallet
         // balance
-        orderController.placeSell(sellOrder);
+        orderController.placeSell(sellOrderDTO);
         settlementHandler.shutdown();
         assertTrue(settlementHandler.awaitTermination(
                 30, TimeUnit.SECONDS));
