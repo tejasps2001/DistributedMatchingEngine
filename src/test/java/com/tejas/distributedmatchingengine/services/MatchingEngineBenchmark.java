@@ -53,12 +53,7 @@ public class MatchingEngineBenchmark {
         // Use daemon threads to allow the JVM to exit when settlement
         // is still being executed (since only the matching thread is
         // being benchmarked).
-        settlementHandler = Executors.newFixedThreadPool(8, runnable -> {
-            Thread thread = new Thread(runnable);
-            thread.setDaemon(true);
-            thread.setName("settlement-worker");
-            return thread;
-        });
+        settlementHandler = Executors.newFixedThreadPool(8);
 
         UserRepository userRepository = new UserRepository();
         TransactionRepository transactionRepository = new TransactionRepository();
