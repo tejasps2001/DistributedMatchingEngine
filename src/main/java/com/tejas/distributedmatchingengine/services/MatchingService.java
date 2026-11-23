@@ -161,7 +161,7 @@ public class MatchingService {
                 if (order.getStatus() == Status.CANCELLED) {
                     settlementService.settleCancellation(order);
                     orderQueue.poll();
-                    return;
+                    continue;
                 }
                 // Self-Trade Prevention
                 // Cancel the incoming order
