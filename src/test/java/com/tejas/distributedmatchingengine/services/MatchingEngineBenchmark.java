@@ -21,8 +21,8 @@ import java.util.logging.Logger;
 // 2 modes => 1 fork for each benchmark mode
 @BenchmarkMode({Mode.SampleTime, Mode.Throughput})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Warmup(iterations = 3, time = 2, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 3, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 @State(Scope.Thread)
 public class MatchingEngineBenchmark {
