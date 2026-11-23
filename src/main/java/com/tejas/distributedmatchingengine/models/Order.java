@@ -10,20 +10,21 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Getter
-@Setter
 @EqualsAndHashCode
 public class Order {
     // Use an atomic variable so that the incoming sequence of orders
     // is preserved correctly in the orderID
     private static final AtomicLong nextId = new AtomicLong(1);
 
-    private long orderId;
-    private String userId;
-    private Type type;
-    private BigDecimal price; // Price automatically means the per-share
-    private int quantity;
+    private final long orderId;
+    private final String userId;
+    private final Type type;
+    private final BigDecimal price; // Price automatically means the per-share
+    private final int quantity;
+    @Setter
     private int remainingQuantity;
-    private Instant timestamp;
+    private final Instant timestamp; // Order creation time
+    @Setter
     private Status status;
 
     public Order(String userId,
