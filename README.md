@@ -10,8 +10,8 @@ A deterministic, low-latency price-time priority (FIFO) Limit Order Book (LOB) a
 double-entry escrow ledger engineered in Java 21 and Spring Boot 3.
 
 The engine implements a **single-writer matching core** decoupled from an
-**asynchronous settlement thread pool**, sustaining **~100,000 matches/sec**
-in memory with a **5.61 µs median latency**, and **1,000 HTTP req/sec** end-to-end 
+**asynchronous settlement thread pool**, sustaining **~146,000 matches/sec**
+in memory with a **5.54 µs median latency**, and **1,000 HTTP req/sec** end-to-end 
 through Spring MVC with zero errors.
 
 ---
@@ -86,7 +86,7 @@ the complete Spring MVC REST pipeline.
 
 ### 1. In-Memory Matching Core (JMH)
 
-Microbenchmarks were run on OpenJDK 25 (LTS) using continuous multi-level
+Micro benchmarks were run on OpenJDK 25 (LTS) using continuous multi-level
 liquidity sweeps across multiple price tiers with compiler black hole consumer
 isolation:
 
@@ -94,8 +94,8 @@ isolation:
 ```
 
 Benchmark                                  Mode       Count      Score        Error     Units
-MatchingEngineBenchmark.aggressiveBuySweep thrpt          5      0.094  ±     0.021    ops/µs (~94k - 101k ops/sec)
-MatchingEngineBenchmark.aggressiveBuySweep sample    401,171      9.777  ±     0.563     µs/op
+MatchingEngineBenchmark.aggressiveBuySweep thrpt          5      0.151 ±     0.021    ops/µs (~151k ops/sec)
+MatchingEngineBenchmark.aggressiveBuySweep sample    598,677     7.704 ±     0.615     µs/op
 
 ```
 
@@ -103,11 +103,11 @@ MatchingEngineBenchmark.aggressiveBuySweep sample    401,171      9.777  ±     
 
 | Percentile       | Latency       | Evaluation Context                                          |
 |:-----------------|:--------------|:------------------------------------------------------------|
-| **p50 (Median)** | **5.61 µs**   | Half of all multi-level matches clear in ~5.6 microseconds. |
-| **p90**          | **8.06 µs**   | 90% of order sweeps complete under 9 microseconds.          |
-| **p95**          | **13.57 µs**  | High-percentile boundary under continuous load.             |
-| **p99**          | **103.04 µs** | Tail distribution including task queuing.                   |
-| **p100 (Max)**   | **21.92 ms**  | Lowest recorded STW young-generation GC safepoint pause.    |
+| **p50 (Median)** | **5.28 µs**   | Half of all multi-level matches clear in ~5.6 microseconds. |
+| **p90**          | **6.91 µs**   | 90% of order sweeps complete under 9 microseconds.          |
+| **p95**          | **9.46 µs**   | High-percentile boundary under continuous load.             |
+| **p99**          | **81.024 µs** | Tail distribution including task queuing.                   |
+| **p100 (Max)**   | **32.28 ms**  | Lowest recorded STW young-generation GC safepoint pause.    |
 
 ---
 
@@ -119,18 +119,18 @@ across 50 concurrent Tomcat workers over a 30-second measurement window:
 
 ```
 
-HTTP Req Duration: p(95) = 2.58ms, p(99) = 22.54ms
-HTTP Req Failure Rate: 0.00% (0 errors out of 29,826 total requests)
-Checks Succeeded: 100.00% (29,806 out of 29,806 valid status assertions)
+HTTP Req Duration: p(95) = 1.3ms, p(99) = 2.19ms
+HTTP Req Failure Rate: 0.00% (0 errors out of 30,020 total requests)
+Checks Succeeded: 100.00%
 
 ```
 
 | Metric                    | Result            | Target SLA    | Status                     |
 |:--------------------------|:------------------|:--------------|:---------------------------|
-| **Throughput**            | **987.6 req/sec** | 1,000 req/sec | **Passed**                 |
+| **Throughput**            | **999.7 req/sec** | 1,000 req/sec | **Passed**                 |
 | **Median Duration (p50)** | **988.91 µs**     | < 10.0 ms     | **Passed (< 1 ms)**        |
-| **p95 Duration**          | **2.58 ms**       | < 50.0 ms     | **Passed**                 |
-| **p99 Duration**          | **22.54 ms**      | < 150.0 ms    | **Passed**                 |
+| **p95 Duration**          | **1.3 ms**        | < 50.0 ms     | **Passed**                 |
+| **p99 Duration**          | **2.19 ms**       | < 150.0 ms    | **Passed**                 |
 | **Error Rate**            | **0.00%**         | < 1.00%       | **Passed (Zero Failures)** |
 
 ---
@@ -166,7 +166,6 @@ the unique `userId`.
 ```json
 {
   "userId": "user_4a7b1c",
-  "type": "BUY",
   "price": 105.00,
   "quantity": 10
 }
@@ -233,9 +232,9 @@ double-spends.
 
 ```bash
 # Run unit and integration tests
-./mvnw clean test
+./mvnw clean test-compile
 
-# Run JMH Microbenchmarks exclusively
+# Run JMH Micro benchmarks exclusively
 ./mvnw test -Dtest=MatchingEngineBenchmark
 
 ```

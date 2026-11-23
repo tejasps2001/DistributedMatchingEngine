@@ -8,7 +8,7 @@ export const options = {
             rate: 1000,
             timeUnit: '1s',
             duration: '30s',
-            preAllocatedVUs: 75
+            preAllocatedVUs: 100
         },
     },
     thresholds: {
@@ -58,11 +58,9 @@ export default function loadTest (data) {
         .toFixed(2);
     // Quantity range: 1 to 5
     const quantity = Math.floor(Math.random() * 5) + 1;
-    const side = isBuy ? 'BUY' : 'SELL';
 
     const payload = JSON.stringify({
-        userId: userId,
-        type: side,
+        userID: userId,
         price: price,
         quantity: quantity,
     });
