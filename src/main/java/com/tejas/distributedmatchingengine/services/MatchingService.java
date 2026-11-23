@@ -138,7 +138,9 @@ public class MatchingService {
                 suitableOrdersIterator.remove();
                 continue;
             }
-            for (Order order : orderQueue) {
+
+            while (!orderQueue.isEmpty()) {
+                Order order = orderQueue.peek();
                 if (order.getStatus() == Status.CANCELLED) {
                     settlementService.settleCancellation(order);
                     orderQueue.poll();
