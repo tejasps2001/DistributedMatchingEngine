@@ -45,7 +45,7 @@ public class MatchingEngineBenchmark {
     public void setupTrial() {
         // Turn off logging to prevent pollution of the benchmark scores
         Logger.getLogger("com.tejas.distributedmatchingengine")
-                .setLevel(java.util.logging.Level.OFF);
+                .setLevel(java.util.logging.Level.WARNING);
     }
 
     @Setup(Level.Iteration)
