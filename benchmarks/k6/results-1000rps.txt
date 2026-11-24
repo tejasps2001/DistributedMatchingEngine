@@ -1,0 +1,55 @@
+         /\      Grafana   /‾‾/
+     /\  /  \     |\  __   /  /
+    /  \/    \    | |/ /  /   ‾‾\
+   /          \   |   (  |  (‾)  |
+  / __________ \  |_|\_\  \_____/
+
+
+      execution: local
+         script: benchmarks/k6/load-test.js
+         output: -
+
+      scenarios: (100.00%) 1 scenario, 500 max VUs, 1m0s max duration (incl. graceful stop):
+               * constant_request_rate: 1000.00 iterations/s for 30s (maxVUs: 500, gracefulStop: 30s)
+
+
+
+   █ THRESHOLDS
+
+     http_req_duration
+     ✓ 'p(95)<50' p(95)=1.06ms
+     ✓ 'p(99)<150' p(99)=1.35ms
+
+     http_req_failed
+     ✓ 'rate<0.01' rate=0.00%
+
+
+   █ TOTAL RESULTS
+
+     checks_total.......: 30001   999.127819/s
+     checks_succeeded...: 100.00% 30001 out of 30001
+     checks_failed......: 0.00%   0 out of 30001
+
+     ✓ Order accepted or filled (200 or 202)
+
+     HTTP
+     http_req_duration..............: avg=874.93µs min=550.75µs med=839.22µs max=15.28ms p(90)=1ms    p(95)=1.06ms
+       { expected_response:true }...: avg=874.93µs min=550.75µs med=839.22µs max=15.28ms p(90)=1ms    p(95)=1.06ms
+     http_req_failed................: 0.00%  0 out of 30021
+     http_reqs......................: 30021  999.793882/s
+
+     EXECUTION
+     iteration_duration.............: avg=1.07ms   min=706.35µs med=1.03ms   max=17.94ms p(90)=1.23ms p(95)=1.31ms
+     iterations.....................: 30001  999.127819/s
+     vus............................: 1      min=1          max=3
+     vus_max........................: 500    min=500        max=500
+
+     NETWORK
+     data_received..................: 4.8 MB 160 kB/s
+     data_sent......................: 6.2 MB 205 kB/s
+
+
+
+
+ running (0m30.0s), 000/500 VUs, 30001 complete and 0 interrupted iterations
+ constant_request_rate ✓ [===================================] 000/500 VUs  30s  1000.00 iters/s

@@ -129,6 +129,10 @@ Checks Succeeded: 100.00%
 
 ---
 
+### Interpretation of the benchmarks
+* HTTP and JSON overhead dominate the CPU for the entire process.
+* The actual order matching code takes up very little of the CPU time.
+
 ## API Specification
 
 The REST boundary validates incoming payloads via Jakarta Bean Validation
