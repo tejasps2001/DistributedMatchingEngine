@@ -184,9 +184,15 @@ class MatchingEngineConcurrencyIntegrationTest {
                                                 "orderID")));
                         var userID = orderRequest.userid();
                         var wallet = userRepository.findUserByID(userID).get();
-                        var order = wallet.getOrderList().stream().
-                                filter(o -> o.getOrderId() == orderID)
-                                .findFirst().get();
+                        // Acquire lock on the order list so that we can access it
+                        // in a thread-safe manner. This prevents CME.
+                        var orderList = wallet.getOrderList();
+                        Order order;
+                        synchronized (orderList) {
+                            order = wallet.getOrderList().stream().
+                                    filter(o -> o.getOrderId() == orderID)
+                                    .findFirst().get();
+                        }
                         assertTrue(response.getStatusCode().is2xxSuccessful());
                         unfilledQuantity += order.getRemainingQuantity();
                         filledQuantity +=
