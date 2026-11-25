@@ -24,6 +24,8 @@ public class OrderController {
 
     private static final Logger logger = Logger.getLogger(
             OrderController.class.getName());
+    
+    private static final String ORDER_ID = "orderID";
 
     public OrderController(MatchingService matchingService,
                            UserRepository userRepository) {
@@ -48,27 +50,7 @@ public class OrderController {
         if (wallet.tryDeductFromAvailableShares(newSellOrder.getQuantity())) {
             wallet.addOrderToWallet(newSellOrder);
             OrderMatchResponse matchResult = matchingService.matchSell(newSellOrder);
-            return switch (matchResult.status()) {
-                case Status.NEW -> ResponseEntity
-                        .status(HttpStatus.ACCEPTED)
-                        .header("orderID",
-                                String.valueOf(newSellOrder.getOrderId()))
-                        .body("Couldn't fill order. Added to order book.");
-                case Status.PARTIALLY_FILLED -> ResponseEntity
-                        .status(HttpStatus.OK)
-                        .header("orderID",
-                                String.valueOf(newSellOrder.getOrderId()))
-                        .body(String.format("Filled %d shares.",
-                                matchResult.filledQuantity()));
-                case Status.FILLED -> ResponseEntity
-                        .status(HttpStatus.OK)
-                        .header("orderID",
-                                String.valueOf(newSellOrder.getOrderId()))
-                        .body("Order executed.");
-                case Status.CANCELLED -> ResponseEntity
-                        .status(HttpStatus.CONFLICT)
-                        .body("Order cancelled due to self-trade prevention.");
-            };
+            return craftResponse(matchResult, newSellOrder);
         } else {
             newSellOrder.setStatus(Status.CANCELLED);
             return ResponseEntity
@@ -82,7 +64,6 @@ public class OrderController {
         logger.info("Received BUY order.");
         UserWallet wallet = userRepository.findUserByID(req.userid())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
-                        " userID:" + newBuyOrder.getUserId()));
                         " userid:" + req.userid()));
         Order newBuyOrder = new Order(req.userid(),
                 Type.BUY, BigDecimal.valueOf(req.price()), req.quantity());
@@ -92,27 +73,7 @@ public class OrderController {
         ))) {
             wallet.addOrderToWallet(newBuyOrder);
             OrderMatchResponse matchResult = matchingService.matchBuy(newBuyOrder);
-            return switch (matchResult.status()) {
-                case Status.NEW -> ResponseEntity
-                        .status(HttpStatus.ACCEPTED)
-                        .header("orderID",
-                                String.valueOf(newBuyOrder.getOrderId()))
-                        .body("Couldn't fill order. Added to order book.");
-                case Status.PARTIALLY_FILLED -> ResponseEntity
-                        .status(HttpStatus.OK)
-                        .header("orderID",
-                                String.valueOf(newBuyOrder.getOrderId()))
-                        .body(String.format("Bought %d shares.",
-                                matchResult.filledQuantity()));
-                case Status.FILLED -> ResponseEntity
-                        .status(HttpStatus.OK)
-                        .header("orderID",
-                                String.valueOf(newBuyOrder.getOrderId()))
-                        .body("Order executed.");
-                case Status.CANCELLED -> ResponseEntity
-                        .status(HttpStatus.CONFLICT)
-                        .body("Order cancelled due to self-trade prevention.");
-            };
+            return craftResponse(matchResult, newBuyOrder);
         } else {
             newBuyOrder.setStatus(Status.CANCELLED);
             return ResponseEntity
@@ -140,6 +101,34 @@ public class OrderController {
             default -> ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Unexpected order status.");
+        };
+    }
+
+    private ResponseEntity<String> craftResponse(OrderMatchResponse matchResponse,
+                                                 Order incomingOrder) {
+        var responseStatus = matchResponse.status();
+        String partialExecution = incomingOrder.getType() == Type.BUY ?
+                "Bought %d shares." : "Filled %d shares.";
+        return switch (responseStatus) {
+            case Status.NEW -> ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .header(ORDER_ID,
+                            String.valueOf(incomingOrder.getOrderId()))
+                    .body("Couldn't fill order. Added to order book.");
+            case Status.PARTIALLY_FILLED -> ResponseEntity
+                    .status(HttpStatus.OK)
+                    .header(ORDER_ID,
+                            String.valueOf(incomingOrder.getOrderId()))
+                    .body(String.format(partialExecution,
+                            matchResponse.filledQuantity()));
+            case Status.FILLED -> ResponseEntity
+                    .status(HttpStatus.OK)
+                    .header(ORDER_ID,
+                            String.valueOf(incomingOrder.getOrderId()))
+                    .body("Order executed.");
+            default -> ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("There was a problem with the server.");
         };
     }
 }

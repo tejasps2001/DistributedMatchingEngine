@@ -109,32 +109,22 @@ public class MatchingService {
 
     public List<Transaction> matchOrders(Order newOrder,
                                          SortedMap<BigDecimal,
-                                                  Queue<Order>> suitableOrdersMap) {
-        List<Transaction> matches;
-        Iterator<Map.Entry<BigDecimal, Queue<Order>>> suitableOrdersIterator =
-                suitableOrdersMap.entrySet().iterator();
-        while (suitableOrdersIterator.hasNext()) {
-            var suitableOrders = suitableOrdersIterator.next();
-            // If the order price in the order book goes beyond the incoming order's
-            // bound then we stop matching & add the partially filled order to
-            // the order book
-            if (newOrder.getType() == Type.BUY &&
-                    suitableOrders.getKey().compareTo(newOrder.getPrice()) > 0) {
-                return Collections.emptyList();
-            }
-            if (newOrder.getType() == Type.SELL &&
-                    suitableOrders.getKey().compareTo(newOrder.getPrice()) < 0) {
-                return Collections.emptyList();
-            }
-            var orderQueue = suitableOrders.getValue();
-            // Return if orderQueue is empty
+                                                 Queue<Order>> orderBook) {
+        List<Transaction> matches = new ArrayList<>();
+        Iterator<Map.Entry<BigDecimal, Queue<Order>>> priceLevels =
+                orderBook.entrySet().iterator();
+        while (priceLevels.hasNext()) {
+            var priceLevel = priceLevels.next();
+            // If the price level in the order book is beyond the incoming order's
+            // price then we stop matching & return since no more matches is
+            // possible
+            if (hasNoMatchableOrders(newOrder, priceLevel.getKey()))
+                return matches;
+            var orderQueue = priceLevel.getValue();
+            // Remove the orderQueue if it is empty
             if (orderQueue.isEmpty()) {
-                if (newOrder.getType() == Type.BUY)
-                    logger.log(Level.INFO, "No {0} to match to!", Type.SELL);
-                else
-                    logger.log(Level.INFO, "No {0} to match to!", Type.BUY);
                 // Remove the empty order queue from the book
-                suitableOrdersIterator.remove();
+                priceLevels.remove();
                 continue;
             }
 
@@ -160,71 +150,63 @@ public class MatchingService {
                         order.getRemainingQuantity());
                 var qtyLeft = newOrder.getRemainingQuantity() -
                         order.getRemainingQuantity();
-                matches = new ArrayList<>();
                 if (qtyLeft == 0) {
                     newOrder.setRemainingQuantity(0);
                     newOrder.setStatus(Status.FILLED);
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
-                    long transactionID = nextTransactionID.getAndIncrement();
-                    Instant executionTime = Instant.now();
-                    settlementService.settle(order, newOrder, qtyFulfilled);
-                    Transaction newTransaction = new Transaction(
-                            transactionID,
-                            executionTime,
-                            order.getOrderId(),
-                            newOrder.getOrderId(),
-                            order.getPrice(),
-                            qtyFulfilled);
-                    transactionRepository.addTransaction(newTransaction);
+                    Transaction newTransaction = recordAndSettle(order,
+                            newOrder, qtyFulfilled);
                     matches.add(newTransaction);
                     orderQueue.poll();
-                    // DO NOT REMOVE the orderQueue if it is empty here. Since it
-                    // is iterated over using an enhanced for-loop, removing it
-                    // can cause undefined behavior.
                     return matches;
                 } else if (qtyLeft > 0) {
                     newOrder.setRemainingQuantity(qtyLeft);
                     newOrder.setStatus(Status.PARTIALLY_FILLED);
                     order.setRemainingQuantity(0);
                     order.setStatus(Status.FILLED);
-                    long transactionID = nextTransactionID.getAndIncrement();
-                    Instant executionTime = Instant.now();
-                    settlementService.settle(order, newOrder, qtyFulfilled);
-                    Transaction newTransaction = new Transaction(
-                            transactionID,
-                            executionTime,
-                            order.getOrderId(),
-                            newOrder.getOrderId(),
-                            order.getPrice(),
-                            qtyFulfilled);
-                    transactionRepository.addTransaction(newTransaction);
+                    Transaction newTransaction = recordAndSettle(order,
+                            newOrder, qtyFulfilled);
                     matches.add(newTransaction);
                     orderQueue.poll();
-                    // DO NOT REMOVE the orderQueue if it is empty here. Since it
-                    // is iterated over using an enhanced for-loop, removing it
-                    // can cause undefined behavior.
                 } else {
                     newOrder.setRemainingQuantity(0);
                     newOrder.setStatus(Status.FILLED);
                     order.setRemainingQuantity(-1 * qtyLeft);
                     order.setStatus(Status.PARTIALLY_FILLED);
-                    long transactionID = nextTransactionID.getAndIncrement();
-                    Instant executionTime = Instant.now();
-                    settlementService.settle(order, newOrder, qtyFulfilled);
-                    Transaction newTransaction = new Transaction(
-                            transactionID,
-                            executionTime,
-                            order.getOrderId(),
-                            newOrder.getOrderId(),
-                            order.getPrice(),
-                            qtyFulfilled);
-                    transactionRepository.addTransaction(newTransaction);
+                    Transaction newTransaction = recordAndSettle(order,
+                            newOrder, qtyFulfilled);
                     matches.add(newTransaction);
                     return matches;
                 }
             }
         }
         return Collections.emptyList();
+    }
+
+    private Transaction recordAndSettle(Order restingOrder,
+                                        Order incomingOrder,
+                                        int qtyFulfilled) {
+        long transactionID = nextTransactionID.getAndIncrement();
+        Instant executionTime = Instant.now();
+        settlementService.settle(restingOrder, incomingOrder, qtyFulfilled);
+        Transaction newTransaction = new Transaction(
+                transactionID,
+                executionTime,
+                restingOrder.getOrderId(),
+                incomingOrder.getOrderId(),
+                restingOrder.getPrice(),
+                qtyFulfilled);
+        transactionRepository.addTransaction(newTransaction);
+        return newTransaction;
+    }
+
+    private boolean hasNoMatchableOrders(Order incomingOrder,
+                                         BigDecimal price) {
+        var priceBound = price.compareTo(incomingOrder.getPrice());
+        return switch(incomingOrder.getType()) {
+            case BUY -> priceBound > 0;
+            case SELL -> priceBound < 0;
+        };
     }
 }
