@@ -163,7 +163,7 @@ must be created.
 
 ```json
 {
-  "userId": "user_4a7b1c",
+  "userid": "user_4a7b1c",
   "price": 105.00,
   "quantity": 10
 }

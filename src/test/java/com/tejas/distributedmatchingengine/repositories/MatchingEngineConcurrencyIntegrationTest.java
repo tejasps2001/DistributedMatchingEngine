@@ -181,8 +181,8 @@ class MatchingEngineConcurrencyIntegrationTest {
                         var orderID = Long.parseLong(
                                 Objects.requireNonNull(
                                         response.getHeaders().getFirst(
-                                        "orderID")));
-                        var userID = orderRequest.userID();
+                                                "orderID")));
+                        var userID = orderRequest.userid();
                         var wallet = userRepository.findUserByID(userID).get();
                         var order = wallet.getOrderList().stream().
                                 filter(o -> o.getOrderId() == orderID)

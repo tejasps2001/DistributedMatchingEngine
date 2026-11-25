@@ -4,10 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-import java.math.BigDecimal;
-
 public record PlaceOrderRequest(
-        @NotBlank String userID,
+        @NotBlank String userid,
         @NotNull @Positive double price,
         @Positive int quantity) {
 }

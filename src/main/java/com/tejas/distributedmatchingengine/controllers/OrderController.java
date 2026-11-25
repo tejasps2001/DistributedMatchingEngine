@@ -34,9 +34,14 @@ public class OrderController {
     @PostMapping("/sell")
     public ResponseEntity<String> placeSell(@Valid @RequestBody PlaceOrderRequest req) {
         logger.info("Received SELL order.");
-        UserWallet wallet = userRepository.findUserByID(newSellOrder.getUserId())
+        UserWallet wallet = userRepository.findUserByID(req.userid())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
-                        " userID:" + newSellOrder.getUserId()));
+                        " userid:" + req.userid()));
+        if (washTradingAttempt(wallet, Type.BUY)) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("Order cancelled due to self-trade prevention.");
+        }
         Order newSellOrder = new Order(req.userid(),
                 Type.SELL, BigDecimal.valueOf(req.price()), req.quantity());
         // Check if the user contains the required amount of shares
@@ -75,9 +80,10 @@ public class OrderController {
     @PostMapping("/buy")
     public ResponseEntity<String> placeBuy(@Valid @RequestBody PlaceOrderRequest req) {
         logger.info("Received BUY order.");
-        UserWallet wallet = userRepository.findUserByID(newBuyOrder.getUserId())
+        UserWallet wallet = userRepository.findUserByID(req.userid())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
                         " userID:" + newBuyOrder.getUserId()));
+                        " userid:" + req.userid()));
         Order newBuyOrder = new Order(req.userid(),
                 Type.BUY, BigDecimal.valueOf(req.price()), req.quantity());
         // Check if the user has the money to buy
