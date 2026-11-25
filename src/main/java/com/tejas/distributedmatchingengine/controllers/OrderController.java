@@ -34,10 +34,11 @@ public class OrderController {
     @PostMapping("/sell")
     public ResponseEntity<String> placeSell(@Valid @RequestBody PlaceOrderRequest req) {
         logger.info("Received SELL order.");
-        Order newSellOrder = new Order(req.userID(), Type.SELL, req.price(), req.quantity());
         UserWallet wallet = userRepository.findUserByID(newSellOrder.getUserId())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
                         " userID:" + newSellOrder.getUserId()));
+        Order newSellOrder = new Order(req.userid(),
+                Type.SELL, BigDecimal.valueOf(req.price()), req.quantity());
         // Check if the user contains the required amount of shares
         if (wallet.tryDeductFromAvailableShares(newSellOrder.getQuantity())) {
             wallet.addOrderToWallet(newSellOrder);
@@ -74,10 +75,11 @@ public class OrderController {
     @PostMapping("/buy")
     public ResponseEntity<String> placeBuy(@Valid @RequestBody PlaceOrderRequest req) {
         logger.info("Received BUY order.");
-        Order newBuyOrder = new Order(req.userID(), Type.BUY, req.price(), req.quantity());
         UserWallet wallet = userRepository.findUserByID(newBuyOrder.getUserId())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
                         " userID:" + newBuyOrder.getUserId()));
+        Order newBuyOrder = new Order(req.userid(),
+                Type.BUY, BigDecimal.valueOf(req.price()), req.quantity());
         // Check if the user has the money to buy
         if (wallet.tryDeductFromAvailableBalance(newBuyOrder.getPrice().multiply(
                 BigDecimal.valueOf(newBuyOrder.getQuantity())

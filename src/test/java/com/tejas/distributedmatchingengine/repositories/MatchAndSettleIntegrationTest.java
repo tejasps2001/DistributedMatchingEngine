@@ -74,11 +74,11 @@ class MatchAndSettleIntegrationTest {
     void matchAndSettleWithBuyerPriceImprovement() {
         // Resting sell
         PlaceOrderRequest sellOrderDTO = new PlaceOrderRequest(
-                newSellingUser, BigDecimal.valueOf(10.00), 20
+                newSellingUser, 10.00, 20
         );
         // Incoming aggressive buy
         PlaceOrderRequest buyOrderDTO = new PlaceOrderRequest(
-                newBuyingUser, BigDecimal.valueOf(12.00), 20
+                newBuyingUser, 12.00, 20
         );
 
         var orderStatus = orderController.placeSell(sellOrderDTO);
@@ -127,11 +127,11 @@ class MatchAndSettleIntegrationTest {
     void matchAndSettleWithSellerPriceImprovement() {
         // Incoming aggressive sell
         PlaceOrderRequest sellOrderDTO = new PlaceOrderRequest(
-                newSellingUser, BigDecimal.valueOf(10.00), 20
+                newSellingUser, 10.00, 20
         );
         // Resting buy
         PlaceOrderRequest buyOrderDTO = new PlaceOrderRequest(
-                newBuyingUser, BigDecimal.valueOf(12.00), 20
+                newBuyingUser, 12.00, 20
         );
 
         var orderStatus = orderController.placeBuy(buyOrderDTO);
@@ -183,7 +183,7 @@ class MatchAndSettleIntegrationTest {
             throws InterruptedException {
         // Order to be canceled
         PlaceOrderRequest buyOrderDTO = new PlaceOrderRequest(
-                newBuyingUser, BigDecimal.valueOf(10.00), 5
+                newBuyingUser, 10.00, 5
         );
         // Order that triggers the removal of the above canceled BUY order
         // An order that gets canceled is not immediately settled. It is
@@ -192,7 +192,7 @@ class MatchAndSettleIntegrationTest {
         // order queue. Hence, using another order to trigger the matching
         // process.
         PlaceOrderRequest sellOrderDTO = new PlaceOrderRequest(
-                newSellingUser, BigDecimal.valueOf(10.00), 5
+                newSellingUser, 10.00, 5
         );
 
         orderController.placeBuy(buyOrderDTO);

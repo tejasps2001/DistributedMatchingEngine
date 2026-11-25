@@ -36,7 +36,7 @@ class OrderControllerUnitTests {
     @InjectMocks
     private OrderController orderController;
 
-    BigDecimal orderPrice = BigDecimal.valueOf(24.00);
+    double orderPrice = 24.00;
 
     @Test
     @DisplayName("Test whether a SELL order is successfully matched and fully" +
@@ -284,7 +284,7 @@ class OrderControllerUnitTests {
     @DisplayName("Test that the order is cancelled.")
     void orderCancellationHappyFlow() {
         Order cancelOrder = new Order("user132",
-                Type.SELL, orderPrice, 10);
+                Type.SELL, BigDecimal.valueOf(orderPrice), 10);
         long orderID = cancelOrder.getOrderId();
         cancelOrder.setStatus(Status.CANCELLED);
         given(matchingService.cancelOrder(orderID))
@@ -300,7 +300,7 @@ class OrderControllerUnitTests {
             " filled.")
     void orderCancellationDeniedAlreadyFilled() {
         Order cancelOrder = new Order("user132",
-                Type.SELL, orderPrice, 10);
+                Type.SELL, BigDecimal.valueOf(orderPrice), 10);
         long orderID = cancelOrder.getOrderId();
         cancelOrder.setStatus(Status.FILLED);
         given(matchingService.cancelOrder(orderID))

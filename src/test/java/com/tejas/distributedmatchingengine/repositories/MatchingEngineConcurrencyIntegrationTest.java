@@ -97,8 +97,8 @@ class MatchingEngineConcurrencyIntegrationTest {
         int i = 0;
         while (i < 250) {
             orders[i] = new PlaceOrderRequest(user[generator.nextInt(0, 5)],
-                    BigDecimal.valueOf(generator.nextDouble(
-                            9.00, 11.00)),
+                    generator.nextDouble(
+                            9.00, 11.00),
                     generator.nextInt(10, 21)
 
             );
@@ -108,8 +108,8 @@ class MatchingEngineConcurrencyIntegrationTest {
         }
         while (i < 500) {
             orders[i] = new PlaceOrderRequest(user[generator.nextInt(5, 10)],
-                    BigDecimal.valueOf(generator.nextDouble(
-                            9.00, 11.00)),
+                    generator.nextDouble(
+                            9.00, 11.00),
                     generator.nextInt(10, 21)
             );
             totalQuantity += orders[i].quantity();

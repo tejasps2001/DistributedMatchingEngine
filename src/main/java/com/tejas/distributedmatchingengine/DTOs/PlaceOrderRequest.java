@@ -8,6 +8,6 @@ import java.math.BigDecimal;
 
 public record PlaceOrderRequest(
         @NotBlank String userID,
-        @NotNull @Positive BigDecimal price,
+        @NotNull @Positive double price,
         @Positive int quantity) {
 }
