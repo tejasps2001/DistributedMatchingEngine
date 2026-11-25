@@ -2,6 +2,7 @@ package com.tejas.distributedmatchingengine.repositories;
 
 import com.tejas.distributedmatchingengine.models.Transaction;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.concurrent.*;
@@ -15,6 +16,7 @@ public class TransactionRepository {
     @Getter
     private final ConcurrentNavigableMap<Long, Transaction> transactionsLedger;
 
+    @Autowired
     public TransactionRepository() {
         this.transactionsLedger = new ConcurrentSkipListMap<>();
     }

@@ -1,6 +1,7 @@
 package com.tejas.distributedmatchingengine.repositories;
 
 import com.tejas.distributedmatchingengine.models.UserWallet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.util.TreeMap;
 public class UserRepository {
     private final SortedMap<String, UserWallet> users;
 
+    @Autowired
     public UserRepository() {
         users = new TreeMap<>();
     }
