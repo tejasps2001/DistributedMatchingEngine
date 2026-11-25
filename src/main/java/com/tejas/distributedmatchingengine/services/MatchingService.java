@@ -135,13 +135,6 @@ public class MatchingService {
                     orderQueue.poll();
                     continue;
                 }
-                // Self-Trade Prevention
-                // Cancel the incoming order
-                if (Objects.equals(order.getUserId(), newOrder.getUserId())) {
-                    newOrder.setStatus(Status.CANCELLED);
-                    settlementService.settleCancellation(newOrder);
-                    return Collections.emptyList();
-                }
                 String msg = String.format("\n%s is suitable for the" +
                                 " incoming %s.", order.toCompactString(),
                         newOrder.toCompactString());

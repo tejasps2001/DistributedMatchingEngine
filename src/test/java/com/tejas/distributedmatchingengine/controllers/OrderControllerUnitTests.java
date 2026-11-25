@@ -15,8 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -310,5 +309,26 @@ class OrderControllerUnitTests {
 
         assertEquals("Couldn't cancel. Order already filled.",
                 cancelStatus.getBody());
+    }
+
+    @Test
+    @DisplayName("Test that the self-trade prevention works correctly.")
+    void selfTradePrevention() {
+        Order sellOrder = new Order("user123",
+                Type.SELL, BigDecimal.valueOf(orderPrice), 20);
+
+        UserWallet wallet = new UserWallet(BigDecimal.valueOf(orderPrice));
+        wallet.addOrderToWallet(sellOrder);
+
+        given(userRepository.findUserByID("user123"))
+                .willReturn(Optional.of(wallet));
+
+        PlaceOrderRequest orderRequest = new PlaceOrderRequest("user123",
+                orderPrice, 20);
+
+        var response = orderController.placeBuy(orderRequest);
+
+        assertEquals("Order cancelled due to self-trade prevention.",
+                response.getBody());
     }
 }

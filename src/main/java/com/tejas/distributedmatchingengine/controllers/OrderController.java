@@ -65,6 +65,11 @@ public class OrderController {
         UserWallet wallet = userRepository.findUserByID(req.userid())
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
                         " userid:" + req.userid()));
+        if (washTradingAttempt(wallet, Type.SELL)) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("Order cancelled due to self-trade prevention.");
+        }
         Order newBuyOrder = new Order(req.userid(),
                 Type.BUY, BigDecimal.valueOf(req.price()), req.quantity());
         // Check if the user has the money to buy
@@ -130,5 +135,16 @@ public class OrderController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("There was a problem with the server.");
         };
+    }
+
+    private boolean washTradingAttempt(UserWallet wallet,
+                                       Type oppositeType) {
+        // Acquire lock on the order list so that we can access it
+        // in a thread-safe manner. This prevents CME.
+        var orderList = wallet.getOrderList();
+        synchronized (orderList) {
+            return orderList.stream()
+                    .anyMatch(o -> o.getType() == oppositeType);
+        }
     }
 }
