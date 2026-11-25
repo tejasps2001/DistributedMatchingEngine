@@ -60,7 +60,7 @@ export default function loadTest (data) {
     const quantity = Math.floor(Math.random() * 5) + 1;
 
     const payload = JSON.stringify({
-        userID: userId,
+        userid: userId,
         price: price,
         quantity: quantity,
     });

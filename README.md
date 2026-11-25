@@ -30,6 +30,7 @@ Spring MVC with zero errors.
                   ┌───────────────────────────────┐
                   │    Pre-Trade Balance Check    │
                   │   (Encumber Available Funds)  │
+                  |   Self-Trade Prevention (STP) |
                   └──────────────┬────────────────┘
                                  │
                         (Synchronized Match Path)
@@ -38,52 +39,50 @@ Spring MVC with zero errors.
                   │    Matching Engine (FIFO)     │
                   │  - Price Cross Detection      │
                   │  - Multi-Level Book Walking   │
-                  │  - Self-Trade Prevention (STP)│
                   │  - Price-Improvement Refunds  │
                   └──────────────┬────────────────┘
                                  │
                         (Async Thread Pool)
                                  ▼
                   ┌───────────────────────────────┐
-                  │   Settlement & Ledger Core    │
+                  │             Settlement        │
                   │  - Balance Transfers          │
-                  │  - Serial Transaction Ledger  │
+                  │  - Shares Settlement          │
                   └───────────────────────────────┘
 
 ### Core Design Decisions
 
 1. **Deterministic matching under a single lock:** Eliminates read/write lock
    thrashing across hot order books by synchronizing order matching on a
-   dedicated execution sequence.
+   dedicated matching thread.
 2. **Asynchronous Settlement Pipeline:** Separates low-latency matching from
    post-trade balance settlement using a managed worker pool.
 3. **Double-Entry Escrow Invariant:** Wallets enforce strict segregation
-   between available and escrow balances. Buy funds and sell shares are
-   pre-allocated at order placement to prevent double-spending or
+   between available and escrow balances. Funds for buying and shares for 
+   selling are pre-allocated at order placement to prevent double-spending or
    negative balances.
 4. **Taker Price Improvement:** Aggressive limit orders sweeping deep resting
    orders execute at maker prices; the remaining surplus between reserved
    escrow and actual trade execution is credited back to the taker's wallet.
-5. **Self-Trade Prevention (STP):** Detects wash-trading patterns when matching
+5. **Self-Trade Prevention (STP):** Detects wash-trading when matching
    opposing orders from identical user IDs, immediately cancelling and
    refunding the aggressive incoming order to prevent artificial volume
    generation.
 
 ---
 
-## Verified Benchmarks
+## Benchmarks
 
 The engine was evaluated at two layers: an **in-memory microbenchmark (JMH)**
-isolating the pure execution core, and a **macro-level load test (k6)**
+isolating the pure execution core, and a **HTTP-level load test (k6)**
 measuring the complete Spring MVC REST pipeline.
 
 ### 1. In-Memory Matching Core (JMH)
 
-Micro benchmarks were run on OpenJDK 25 (LTS) using continuous multi-level
-liquidity sweeps across multiple price tiers with a compiler black hole
+Micro benchmarks were run on OpenJDK 25 (LTS) with a compiler black hole
 consumer:
 
-#### Latency Percentiles (Pure In-Memory Matching)
+#### Latency Percentiles
 
 | Percentile       | Latency       | 
 |:-----------------|:--------------|
@@ -93,13 +92,14 @@ consumer:
 | **p99**          | **30.209 µs** |
 | **p100 (Max)**   | **31.23 ms**  |
 
+<small>The full JMH benchmark result is [here](benchmarks/jmh/results-24-11-2026.txt).</small>
 ---
 
-### 2. Full-Stack End-to-End Load Test (k6)
+### 2. End-to-End Load Test (k6)
 
-Macro load testing executed a constant arrival rate of **1,000 HTTP orders/sec** across maximum of 500 Virtual Users
-(VUs) over a
-30-second measurement window:
+Macro load testing executed a constant arrival rate 
+of **1,000 HTTP orders/sec** across a maximum of 500 Virtual Users
+(VUs) over a 30-second measurement window:
 
 ```
 HTTP Req Duration: p(95) = 1.05ms, p(99) = 1.64ms
@@ -115,6 +115,7 @@ Checks Succeeded: 100.00%
 | **p99 Duration**          | **1.64 ms**       | < 150.0 ms    | **Passed**                 |
 | **Error Rate**            | **0.00%**         | < 1.00%       | **Passed (Zero Failures)** |
 
+<small>The full k6 benchmark result is [here](benchmarks/k6/results-1000rps.txt).</small>
 ---
 
 ### 3. Benchmark metadata
@@ -133,24 +134,44 @@ Checks Succeeded: 100.00%
 * HTTP and JSON overhead dominate the CPU for the entire process.
 * The actual order matching code takes up very little of the CPU time.
 
+### Prerequisites
+
+* **Java 25** or later
+* **Maven 3.9+** (or the included `./mvnw` wrapper)
+* **k6** (optional, for load testing)
+
+### Build and Run Tests
+
+```bash
+# Run unit and integration tests
+./mvnw clean test-compile
+```
+
+### Run the Application
+
+```bash
+./mvnw spring-boot:run
+```
+
+The application runs on `http://localhost:8080`.
+
 ## API Specification
 
 The REST boundary validates incoming payloads via Jakarta Bean Validation
-before dispatching to the order book.
-
-First, a user with a wallet consisting of a balance (and shares, optionally)
-must be created.
+before dispatching to the order book. 
+**First, a user with a wallet consisting of a balance (and shares, optionally)
+must be created.**
 
 ### 1. User & Wallet Management
 
 * `POST /createUser?balance=10000` Initializes a new user with the specified
-  balance and returns the unique `userId`.
+  balance and returns the unique `userid`.
 * `POST /createUserWithShares?balance=10000.00&shares=500`
   Initializes a new user with the specified balance and shares and returns
-  the unique `userId`.
-* `GET /wallet?userID={userId}`
+  the unique `userid`.
+* `GET /wallet?userid={userid}`
   Inspects real-time `Available` vs. `Escrowed` cash and share balances.
-* `DELETE /cancel?orderID={orderId}`
+* `DELETE /cancel?orderid={orderid}`
   Cancels a resting order and restores encumbered escrow funds.
 
 ---
@@ -160,6 +181,8 @@ must be created.
 * **Buy Endpoint:** `POST /buy`
 * **Sell Endpoint:** `POST /sell`
 * **Headers:** `Content-Type: application/json`
+
+**Example**
 
 ```json
 {
@@ -185,53 +208,23 @@ must be created.
 ✅ **Milestone 1: In-Memory Core & Benchmarks (Completed)**
 
 * Deterministic FIFO limit order book with multi-level book sweeping.
-
 * Multi-asset double-entry wallet escrow ledger with price-improvement refunds.
-
 * Self-trade prevention (STP) guard rails.
 * JMH microbenchmarking suite and k6 load verification.
 
 
 * [ ] **Milestone 2: Relational Persistence & ACID Guarantees (In Progress)**
 * PostgreSQL persistence for historical ledgers and trade settlement.
-
 * Pessimistic locking (`SELECT ... FOR UPDATE`) to prevent concurrent wallet
   double-spends.
-
 * Flyway automated database migration pipelines.
-
 * Integration testing suite backed by Testcontainers.
 
 
 * [ ] **Milestone 3: Real-Time Broadcasts & Distributed Clustering**
 * Spring WebSocket (STOMP) real-time ticker feeds.
-
 * Redis Pub/Sub for cross-node trade execution broadcasts.
-
 * Redisson distributed locks for order isolation across horizontal instances.
 
 ---
-
-## Getting Started
-
-### Prerequisites
-
-* **Java 25** or later
-* **Maven 3.9+** (or the included `./mvnw` wrapper)
-* **k6** (optional, for load testing)
-
-### Build and Run Tests
-
-```bash
-# Run unit and integration tests
-./mvnw clean test-compile
-```
-
-### Run the Application
-
-```bash
-./mvnw spring-boot:run
-```
-
-The application runs on `http://localhost:8080`. Swagger/OpenAPI documentation
-is available at `http://localhost:8080/swagger-ui.html`.
+Swagger/OpenAPI documentation is available at `http://localhost:8080/swagger-ui.html`.
