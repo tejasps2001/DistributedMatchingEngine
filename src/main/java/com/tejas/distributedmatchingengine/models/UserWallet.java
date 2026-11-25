@@ -20,8 +20,8 @@ import java.util.UUID;
 @Setter(AccessLevel.NONE)
 public class UserWallet {
 
-    private String userID;
-    private List<Order> orderList;
+    private final String userID;
+    private final List<Order> orderList;
 
     // Balance available for new BUY orders
     private BigDecimal availableBalance;

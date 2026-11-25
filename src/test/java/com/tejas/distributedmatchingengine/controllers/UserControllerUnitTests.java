@@ -13,8 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -39,7 +38,7 @@ class UserControllerUnitTests {
 
         var portfolio = userController.getWallet(sellingWalletUserID);
 
-        assert portfolio.getBody() != null;
+        assertNotNull(portfolio.getBody());
         assertEquals(sellingWallet.toString(), portfolio.getBody().toString());
     }
 
