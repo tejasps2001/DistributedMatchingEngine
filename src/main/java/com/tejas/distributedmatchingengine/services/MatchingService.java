@@ -4,7 +4,6 @@ import com.tejas.distributedmatchingengine.DTOs.OrderMatchResponse;
 import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Transaction;
-import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
 import lombok.Getter;
 import org.springframework.stereotype.Service;

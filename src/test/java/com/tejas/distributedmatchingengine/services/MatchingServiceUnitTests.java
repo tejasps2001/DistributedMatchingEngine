@@ -4,7 +4,6 @@ import com.tejas.distributedmatchingengine.models.Order;
 import com.tejas.distributedmatchingengine.models.Status;
 import com.tejas.distributedmatchingengine.models.Type;
 import com.tejas.distributedmatchingengine.repositories.OrderRepository;
-import com.tejas.distributedmatchingengine.repositories.TransactionRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,9 +28,6 @@ class MatchingServiceUnitTests {
 
     @Mock
     SettlementService settlementService;
-
-    @Mock
-    TransactionRepository transactionRepository;
 
     @InjectMocks
     MatchingService matchingService;
