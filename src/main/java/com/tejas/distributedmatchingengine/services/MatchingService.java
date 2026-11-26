@@ -174,7 +174,7 @@ public class MatchingService {
                 }
             }
         }
-        return Collections.emptyList();
+        return matches;
     }
 
     private Transaction recordAndSettle(Order restingOrder,

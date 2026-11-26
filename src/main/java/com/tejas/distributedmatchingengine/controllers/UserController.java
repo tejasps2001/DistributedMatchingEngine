@@ -21,17 +21,17 @@ public class UserController {
     }
 
     @GetMapping("/wallet")
-    public ResponseEntity<UserWallet> getWallet(@RequestParam String userID) {
-        UserWallet wallet = userRepository.findUserByID(userID)
+    public ResponseEntity<UserWallet> getWallet(@RequestParam String userid) {
+        UserWallet wallet = userRepository.findUserByID(userid)
                 .orElseThrow(() -> new UserNotFoundException("No user with" +
-                        " userID:" + userID));
+                        " userid:" + userid));
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(wallet);
     }
 
     @PostMapping("/createUser")
-    // Create a new user with the specified balance and return the userID of
+    // Create a new user with the specified balance and return the userid of
     // the created account
     public ResponseEntity<String> createNewUser(@RequestParam double balance) {
         if (balance < 0) return ResponseEntity
@@ -44,7 +44,7 @@ public class UserController {
 
     @PostMapping("/createUserWithShares")
     // Create a new user with the specified balance and shares and return
-    // the userID of the created account
+    // the userid of the created account
     public ResponseEntity<String> createNewUserWithShares(@RequestParam double balance,
                                                           @RequestParam int shares) {
         if (balance < 0)

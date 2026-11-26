@@ -113,7 +113,7 @@ public class OrderController {
                                                  Order incomingOrder) {
         var responseStatus = matchResponse.status();
         String partialExecution = incomingOrder.getType() == Type.BUY ?
-                "Bought %d shares." : "Filled %d shares.";
+                "Bought %d shares." : "Sold %d shares.";
         return switch (responseStatus) {
             case Status.NEW -> ResponseEntity
                     .status(HttpStatus.ACCEPTED)
