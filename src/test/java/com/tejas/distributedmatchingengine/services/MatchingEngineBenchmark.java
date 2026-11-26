@@ -74,10 +74,11 @@ public class MatchingEngineBenchmark {
 
     @TearDown(Level.Iteration)
     public void tearDownIteration() {
-        long currTransactionCount = MatchingService.getNextTransactionID().longValue() - prevTransactionCount;
+        long currTransactionCount = (MatchingService.getNextTransactionID().longValue() - 1)
+                - prevTransactionCount;
         // Sanity check that the number of successful matches equal the invocation count
         System.out.printf("Successful Matches = %d Invocations = %d%n",
-                (currTransactionCount - 1) / 2, invocations);
+                (currTransactionCount) / 2, invocations);
         invocations = 0L;
         prevTransactionCount += currTransactionCount;
 
