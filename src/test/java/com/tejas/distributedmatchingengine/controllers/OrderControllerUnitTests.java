@@ -97,7 +97,7 @@ class OrderControllerUnitTests {
 
         var orderStatus = orderController.placeSell(sellOrderDTO);
 
-        assertEquals("Filled 5 shares.", orderStatus.getBody());
+        assertEquals("Sold 5 shares.", orderStatus.getBody());
     }
 
     @Test
